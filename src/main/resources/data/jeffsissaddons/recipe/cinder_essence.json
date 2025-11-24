@@ -1,0 +1,23 @@
+{
+  "type" : "minecraft:crafting_shapeless",
+  "ingredients" :
+  [
+    {
+      "item" : "irons_spellbooks:arcane_essence"
+    },
+    {
+      "item" : "minecraft:blaze_powder"
+    },
+    {
+      "item" : "minecraft:brown_dye"
+    },
+    {
+      "item" : "minecraft:black_dye"
+    }
+  ],
+  "result" :
+  {
+    "id" : "irons_spellbooks:cinder_essence",
+    "count" : 1
+  }
+}
