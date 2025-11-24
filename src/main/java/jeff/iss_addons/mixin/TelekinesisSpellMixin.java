@@ -76,7 +76,7 @@ public abstract class TelekinesisSpellMixin extends AbstractSpell
     {
         Vec3 start = entity.getEyePosition();
         Vec3 end = entity.getLookAngle().normalize().scale(getRange(spellLevel, entity)).add(start);
-        var result = Utils.raycastForEntity(level, entity, start, end, true, .15f, ExtendedTelekinesisData::raycastForEntity);
+        var result = Utils.raycastForEntity(level, entity, start, end, true, .15f, ExtendedTelekinesisData::telekinesisSpellCheck);
         if (result instanceof EntityHitResult entityHitResult)
         {
             var entityHit = entityHitResult.getEntity();
