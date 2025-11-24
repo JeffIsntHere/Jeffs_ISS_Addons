@@ -4,7 +4,8 @@
   "package": "jeff.iss_addons.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
-    "ScrollMixin"
+    "ScrollMixin",
+    "TelekinesisSpellMixin"
   ],
   "injectors": {
     "defaultRequire": 1

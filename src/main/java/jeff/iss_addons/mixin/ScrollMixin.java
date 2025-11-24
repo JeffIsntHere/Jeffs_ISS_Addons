@@ -1,7 +1,6 @@
 package jeff.iss_addons.mixin;
 
 import io.redspace.ironsspellbooks.api.magic.MagicData;
-import io.redspace.ironsspellbooks.api.spells.SpellData;
 import io.redspace.ironsspellbooks.api.spells.SpellRarity;
 import io.redspace.ironsspellbooks.damage.SpellDamageSource;
 import io.redspace.ironsspellbooks.item.Scroll;
@@ -14,13 +13,15 @@ import org.spongepowered.asm.mixin.Overwrite;
 public class ScrollMixin
 {
     @Overwrite
-    protected void removeScrollAfterCast(ServerPlayer serverPlayer, ItemStack stack) {
-        if (serverPlayer.isCreative()) {
+    protected void removeScrollAfterCast(ServerPlayer serverPlayer, ItemStack stack)
+    {
+        if (serverPlayer.isCreative())
+        {
             return;
         }
-        SpellData spellData = MagicData.getPlayerMagicData(serverPlayer).getCastingSpell();
-        float damage = 0;
-        SpellRarity spellRarity = spellData.getRarity();
+        var spellData = MagicData.getPlayerMagicData(serverPlayer).getCastingSpell();
+        var damage = 0.0f;
+        var spellRarity = spellData.getRarity();
         if (spellRarity == SpellRarity.COMMON)
         {
             //1 heart
