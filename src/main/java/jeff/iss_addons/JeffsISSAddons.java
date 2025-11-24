@@ -17,7 +17,7 @@ public class JeffsISSAddons {
     // Directly reference a slf4j logger
     public static final Logger LOGGER = LogUtils.getLogger();
 
-    public JeffsISSAddons(IEventBus modEventBus, ModContainer modContainer) {
-        NeoForge.EVENT_BUS.register(this);
+    public JeffsISSAddons(IEventBus modEventBus, ModContainer modContainer)
+    {
     }
 }
