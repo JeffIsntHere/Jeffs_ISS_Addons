@@ -1,0 +1,13 @@
+{
+  "itemGroup.jeffsissaddons": "Example Mod Tab",
+  "block.jeffsissaddons.example_block": "Example Block",
+  "item.jeffsissaddons.example_item": "Example Item",
+
+  "jeffsissaddons.configuration.title": "Jeff's ISS Addons Configs",
+  "jeffsissaddons.configuration.section.jeffsissaddons.common.toml": "Jeff's ISS Addons Configs",
+  "jeffsissaddons.configuration.section.jeffsissaddons.common.toml.title": "Jeff's ISS Addons Configs",
+  "jeffsissaddons.configuration.items": "Item List",
+  "jeffsissaddons.configuration.logDirtBlock": "Log Dirt Block",
+  "jeffsissaddons.configuration.magicNumberIntroduction": "Magic Number Text",
+  "jeffsissaddons.configuration.magicNumber": "Magic Number"
+}
