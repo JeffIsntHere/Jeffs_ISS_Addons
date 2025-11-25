@@ -117,8 +117,11 @@ public abstract class TelekinesisSpellMixin extends AbstractSpell
         Vec3 deltaMovement = target.getDeltaMovement();
         deltaMovement.scale(Math.min(force.length() / deltaMovement.length(), 0.15f));
         Vec3 finalForce = deltaMovement.add(force);
-        target.setDeltaMovement(finalForce.scale(0.25/jeffsissaddons$volume(target)));
-        caster.setDeltaMovement(caster.getDeltaMovement().add(finalForce.scale(-0.25/jeffsissaddons$volume(caster))));
+        var casterVolume = Math.pow(jeffsissaddons$volume(caster), 0.5);
+        var targetVolume = Math.pow(jeffsissaddons$volume(target), 0.5);
+        var sumVolume = casterVolume + targetVolume;
+        target.setDeltaMovement(finalForce.scale(casterVolume/sumVolume));
+        caster.setDeltaMovement(caster.getDeltaMovement().add(finalForce.scale(-targetVolume/sumVolume)));
         if (target instanceof LivingEntity livingEntity)
         {
             if (force.y > 0) {

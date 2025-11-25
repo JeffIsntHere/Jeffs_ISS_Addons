@@ -26,7 +26,6 @@ public class ExtendedTelekinesisData implements ICastData
 
     public void addFlag(TelekinesisPushPullData telekinesisPushPullData)
     {
-        JeffsISSAddons.LOGGER.info("Delta " + telekinesisPushPullData.one());
         if ((_flag & TelekinesisPushPullData.sUp) == TelekinesisPushPullData.sUp)
         {
             _distance = _distance + _distanceDelta * (float) telekinesisPushPullData.one();
