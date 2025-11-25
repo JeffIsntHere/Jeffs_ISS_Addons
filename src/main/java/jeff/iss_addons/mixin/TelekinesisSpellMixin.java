@@ -17,6 +17,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.level.Level;
@@ -47,7 +48,7 @@ public abstract class TelekinesisSpellMixin extends AbstractSpell
     @Unique
     public void jeffsissaddons$handleProjectile(Projectile projectile, LivingEntity caster, MagicData magicData)
     {
-        magicData.setAdditionalCastData(new ExtendedTelekinesisData(projectile));
+        magicData.setAdditionalCastData(new ExtendedTelekinesisData(caster, projectile));
         if (caster instanceof ServerPlayer serverPlayer)
         {
             //pray this is unused....
@@ -59,7 +60,7 @@ public abstract class TelekinesisSpellMixin extends AbstractSpell
     @Unique
     public void jeffsissaddons$handleLiving(LivingEntity livingEntity, LivingEntity caster, MagicData magicData)
     {
-        magicData.setAdditionalCastData(new ExtendedTelekinesisData(livingEntity));
+        magicData.setAdditionalCastData(new ExtendedTelekinesisData(caster, livingEntity));
         if (caster instanceof ServerPlayer serverPlayer)
         {
             PacketDistributor.sendToPlayer(serverPlayer, new SyncTargetingDataPacket(livingEntity, this));
@@ -106,6 +107,25 @@ public abstract class TelekinesisSpellMixin extends AbstractSpell
         return false;
     }
 
+    @Unique
+    public void jeffsissaddons$applyForce(Vec3 force, Entity target, MagicData magicData)
+    {
+        target.setDeltaMovement(target.getDeltaMovement().scale(0.5f).add(force));
+        if (target instanceof LivingEntity livingEntity)
+        {
+            if (force.y > 0) {
+                livingEntity.resetFallDistance();
+            }
+            if ((magicData.getCastDurationRemaining()) % 10 == 0) {
+                Vec3 travel = new Vec3(livingEntity.getX() - livingEntity.xOld, livingEntity.getY() - livingEntity.yOld, livingEntity.getZ() - livingEntity.zOld);
+                int airborne = (int) (travel.x * travel.x + travel.z * travel.z) / 2;
+                livingEntity.addEffect(new MobEffectInstance(MobEffectRegistry.AIRBORNE, 31, airborne));
+                livingEntity.addEffect(new MobEffectInstance(MobEffectRegistry.ANTIGRAVITY, 11, 0));
+            }
+            livingEntity.hurtMarked = true;
+        }
+    }
+
     @Overwrite
     private void handleTelekinesis(ServerLevel world, LivingEntity entity, MagicData playerMagicData, float strength)
     {
@@ -121,28 +141,27 @@ public abstract class TelekinesisSpellMixin extends AbstractSpell
             {
                 projectile.setOwner(entity);
             }
-            var position = entity.getForward().normalize().scale(10);
+            extendedTelekinesisData.processFlag(entity);
+            var position = extendedTelekinesisData.position(entity);
+            if (extendedTelekinesisData.shouldThrow())
+            {
+                if (entity instanceof ServerPlayer serverPlayer)
+                {
+                    Utils.serverSideCancelCast(serverPlayer);
+                }
+                var force = position.subtract(target.position()).scale(10);
+                jeffsissaddons$applyForce(force, target, playerMagicData);
+                playerMagicData.setAdditionalCastData(null);
+                return;
+            }
             var previous = extendedTelekinesisData.prev(position);
             var multiplier = position.distanceTo(previous);
             if (multiplier < 1)
             {
                 multiplier = 1;
             }
-            var force = position.add(entity.position()).subtract(target.position()).scale(multiplier * strength * (1.0f/world.tickRateManager().tickrate()));
-            target.setDeltaMovement(force);
-            if (target instanceof LivingEntity livingEntity)
-            {
-                if (force.y > 0) {
-                    livingEntity.resetFallDistance();
-                }
-                if ((playerMagicData.getCastDurationRemaining()) % 10 == 0) {
-                    Vec3 travel = new Vec3(livingEntity.getX() - livingEntity.xOld, livingEntity.getY() - livingEntity.yOld, livingEntity.getZ() - livingEntity.zOld);
-                    int airborne = (int) (travel.x * travel.x + travel.z * travel.z) / 2;
-                    livingEntity.addEffect(new MobEffectInstance(MobEffectRegistry.AIRBORNE, 31, airborne));
-                    livingEntity.addEffect(new MobEffectInstance(MobEffectRegistry.ANTIGRAVITY, 11, 0));
-                }
-                livingEntity.hurtMarked = true;
-            }
+            var force = position.subtract(target.position()).scale(multiplier * strength * (1.0f/world.tickRateManager().tickrate()));
+            jeffsissaddons$applyForce(force, target, playerMagicData);
         }
     }
 }
