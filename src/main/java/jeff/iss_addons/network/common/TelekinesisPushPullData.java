@@ -8,7 +8,7 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 
-public record TelekinesisPushPullData(int data) implements CustomPacketPayload
+public record TelekinesisPushPullData(int data, double one) implements CustomPacketPayload
 {
     public static final int tThrow = 1;
     public static final int tStop = 2;
@@ -20,6 +20,8 @@ public record TelekinesisPushPullData(int data) implements CustomPacketPayload
     public static final StreamCodec<ByteBuf, TelekinesisPushPullData> _STREAM_CODEC = StreamCodec.composite(
             ByteBufCodecs.INT,
             TelekinesisPushPullData::data,
+            ByteBufCodecs.DOUBLE,
+            TelekinesisPushPullData::one,
             TelekinesisPushPullData::new
     );
 

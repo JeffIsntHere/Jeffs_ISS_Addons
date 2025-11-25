@@ -1,6 +1,5 @@
 package jeff.iss_addons.mixin;
 
-import io.redspace.ironsspellbooks.IronsSpellbooks;
 import io.redspace.ironsspellbooks.api.config.DefaultConfig;
 import io.redspace.ironsspellbooks.api.spells.AbstractSpell;
 import io.redspace.ironsspellbooks.api.spells.CastType;
@@ -10,7 +9,6 @@ import io.redspace.ironsspellbooks.entity.spells.root.PreventDismount;
 import io.redspace.ironsspellbooks.network.casting.SyncTargetingDataPacket;
 import io.redspace.ironsspellbooks.registries.MobEffectRegistry;
 import io.redspace.ironsspellbooks.spells.eldritch.TelekinesisSpell;
-import jeff.iss_addons.SpellIdAble;
 import jeff.iss_addons.ExtendedTelekinesisData;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -33,9 +31,6 @@ import org.spongepowered.asm.mixin.*;
 public abstract class TelekinesisSpellMixin extends AbstractSpell
 {
     @Shadow
-    private final ResourceLocation spellId = ResourceLocation.fromNamespaceAndPath(IronsSpellbooks.MODID, "telekinesis");
-
-    @Shadow
     protected abstract int getRange(int spellLevel, LivingEntity caster);
 
     @Shadow
@@ -50,7 +45,7 @@ public abstract class TelekinesisSpellMixin extends AbstractSpell
     @Unique
     public void jeffsissaddons$handleProjectile(Projectile projectile, LivingEntity caster, MagicData magicData)
     {
-        magicData.setAdditionalCastData(new ExtendedTelekinesisData(caster, projectile));
+        magicData.setAdditionalCastData(new ExtendedTelekinesisData(caster, projectile, 0.0f, this.getRange(magicData.getCastingSpellLevel(), caster) * 5.0f));
         if (caster instanceof ServerPlayer serverPlayer)
         {
             //pray this is unused....
@@ -62,7 +57,7 @@ public abstract class TelekinesisSpellMixin extends AbstractSpell
     @Unique
     public void jeffsissaddons$handleLiving(LivingEntity livingEntity, LivingEntity caster, MagicData magicData)
     {
-        magicData.setAdditionalCastData(new ExtendedTelekinesisData(caster, livingEntity));
+        magicData.setAdditionalCastData(new ExtendedTelekinesisData(caster, livingEntity, 0.0f, this.getRange(magicData.getCastingSpellLevel(), caster) * 5.0f));
         if (caster instanceof ServerPlayer serverPlayer)
         {
             PacketDistributor.sendToPlayer(serverPlayer, new SyncTargetingDataPacket(livingEntity, this));
@@ -110,9 +105,20 @@ public abstract class TelekinesisSpellMixin extends AbstractSpell
     }
 
     @Unique
-    public void jeffsissaddons$applyForce(Vec3 force, Entity target, MagicData magicData)
+    public double jeffsissaddons$volume(Entity entity)
     {
-        target.setDeltaMovement(target.getDeltaMovement().scale(0.5f).add(force));
+        var bb = entity.getBoundingBox();
+        return bb.getXsize() * bb.getYsize() * bb.getZsize();
+    }
+
+    @Unique
+    public void jeffsissaddons$applyForce(Vec3 force, Entity target, LivingEntity caster, MagicData magicData)
+    {
+        Vec3 deltaMovement = target.getDeltaMovement();
+        deltaMovement.scale(Math.min(force.length() / deltaMovement.length(), 0.15f));
+        Vec3 finalForce = deltaMovement.add(force);
+        target.setDeltaMovement(finalForce.scale(0.25/jeffsissaddons$volume(target)));
+        caster.setDeltaMovement(caster.getDeltaMovement().add(finalForce.scale(-0.25/jeffsissaddons$volume(caster))));
         if (target instanceof LivingEntity livingEntity)
         {
             if (force.y > 0) {
@@ -144,18 +150,18 @@ public abstract class TelekinesisSpellMixin extends AbstractSpell
                 projectile.setOwner(entity);
             }
             extendedTelekinesisData.processFlag(entity);
-            var position = extendedTelekinesisData.position(entity);
             if (extendedTelekinesisData.shouldThrow())
             {
                 if (entity instanceof ServerPlayer serverPlayer)
                 {
                     Utils.serverSideCancelCast(serverPlayer);
                 }
-                var force = position.subtract(target.position()).scale(10);
-                jeffsissaddons$applyForce(force, target, playerMagicData);
+                var force = entity.getForward().normalize().scale(20.0f * strength);
+                jeffsissaddons$applyForce(force, target, entity, playerMagicData);
                 playerMagicData.setAdditionalCastData(null);
                 return;
             }
+            var position = extendedTelekinesisData.direction(entity).scale(extendedTelekinesisData.distance()).add(entity.position());
             var previous = extendedTelekinesisData.prev(position);
             var multiplier = position.distanceTo(previous);
             if (multiplier < 1)
@@ -163,7 +169,7 @@ public abstract class TelekinesisSpellMixin extends AbstractSpell
                 multiplier = 1;
             }
             var force = position.subtract(target.position()).scale(multiplier * strength * (1.0f/world.tickRateManager().tickrate()));
-            jeffsissaddons$applyForce(force, target, playerMagicData);
+            jeffsissaddons$applyForce(force, target, entity, playerMagicData);
         }
     }
 }

@@ -12,7 +12,7 @@ public class TelekinesisPushPull
         var magicData = MagicData.getPlayerMagicData(payloadContext.player());
         if (magicData.getAdditionalCastData() instanceof ExtendedTelekinesisData extendedTelekinesisData)
         {
-            payloadContext.enqueueWork(() -> {extendedTelekinesisData.addFlag(telekinesisPushPullData.data());});
+            payloadContext.enqueueWork(() -> {extendedTelekinesisData.addFlag(telekinesisPushPullData);});
         }
     }
 }

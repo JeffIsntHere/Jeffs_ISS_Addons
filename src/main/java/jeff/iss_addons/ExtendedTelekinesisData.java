@@ -17,25 +17,30 @@ public class ExtendedTelekinesisData implements ICastData
     Vec3 _prev = null;
     Vec3 _direction;
     float _distance;
+    float _maxDistance;
+    float _minDistance;
     boolean _stopFollowCaster = false;
     boolean _throw = false;
     int _flag = 0;
+    public static float _distanceDelta = 3.0f;
 
-    public void addFlag(int flag)
+    public void addFlag(TelekinesisPushPullData telekinesisPushPullData)
     {
-        _flag |= flag;
+        JeffsISSAddons.LOGGER.info("Delta " + telekinesisPushPullData.one());
+        if ((_flag & TelekinesisPushPullData.sUp) == TelekinesisPushPullData.sUp)
+        {
+            _distance = _distance + _distanceDelta * (float) telekinesisPushPullData.one();
+        }
+        if ((_flag & TelekinesisPushPullData.sDown) == TelekinesisPushPullData.sDown)
+        {
+            _distance = _distance - _distanceDelta * (float) telekinesisPushPullData.one();
+        }
+        _distance = Math.clamp(_distance, _minDistance, _maxDistance);
+        _flag |= telekinesisPushPullData.data();
     }
 
     public void processFlag(LivingEntity caster)
     {
-        if ((_flag & TelekinesisPushPullData.sUp) == TelekinesisPushPullData.sUp)
-        {
-            _distance = _distance + 1;
-        }
-        if ((_flag & TelekinesisPushPullData.sDown) == TelekinesisPushPullData.sDown)
-        {
-            _distance = _distance - 1;
-        }
         if ((_flag & TelekinesisPushPullData.tStop) == TelekinesisPushPullData.tStop)
         {
             _direction = caster.getForward().normalize();
@@ -44,6 +49,7 @@ public class ExtendedTelekinesisData implements ICastData
         if ((_flag & TelekinesisPushPullData.tThrow) == TelekinesisPushPullData.tThrow)
         {
             _throw = true;
+            _stopFollowCaster = false;
         }
         _flag = 0;
     }
@@ -53,13 +59,13 @@ public class ExtendedTelekinesisData implements ICastData
         return _throw;
     }
 
-    public Vec3 position(LivingEntity caster)
+    public Vec3 direction(LivingEntity caster)
     {
         if(_stopFollowCaster)
         {
-            return _direction.scale(_distance).add(caster.position());
+            return _direction;
         }
-        return caster.getForward().normalize().scale(_distance).add(caster.position());
+        return caster.getForward().normalize();
     }
 
     @Override
@@ -89,17 +95,22 @@ public class ExtendedTelekinesisData implements ICastData
         return level.getEntity(_uuid);
     }
 
-    public ExtendedTelekinesisData(LivingEntity caster, Entity entity)
+    public ExtendedTelekinesisData(LivingEntity caster, Entity entity, float minDistance, float maxDistance)
     {
         _uuid = entity.getUUID();
         _distance = caster.distanceTo(entity);
         _direction = caster.getForward().normalize();
+        _minDistance = minDistance;
+        _maxDistance = maxDistance;
     }
 
-    public ExtendedTelekinesisData(float distance, Entity entity)
+    public ExtendedTelekinesisData(float distance, Vec3 direction, Entity entity, float minDistance, float maxDistance)
     {
         _uuid = entity.getUUID();
         _distance = distance;
+        _direction = direction;
+        _minDistance = minDistance;
+        _maxDistance = maxDistance;
     }
 
     public static boolean telekinesisSpellCheck(Entity entity)
