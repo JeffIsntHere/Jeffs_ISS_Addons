@@ -1,5 +1,6 @@
 package jeff.iss_addons.mixin;
 
+import io.redspace.ironsspellbooks.IronsSpellbooks;
 import io.redspace.ironsspellbooks.api.config.DefaultConfig;
 import io.redspace.ironsspellbooks.api.spells.AbstractSpell;
 import io.redspace.ironsspellbooks.api.spells.CastType;
@@ -9,6 +10,7 @@ import io.redspace.ironsspellbooks.entity.spells.root.PreventDismount;
 import io.redspace.ironsspellbooks.network.casting.SyncTargetingDataPacket;
 import io.redspace.ironsspellbooks.registries.MobEffectRegistry;
 import io.redspace.ironsspellbooks.spells.eldritch.TelekinesisSpell;
+import jeff.iss_addons.SpellIdAble;
 import jeff.iss_addons.ExtendedTelekinesisData;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -25,14 +27,14 @@ import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.entity.PartEntity;
 import net.neoforged.neoforge.network.PacketDistributor;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Overwrite;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.*;
 
 @Mixin(TelekinesisSpell.class)
 public abstract class TelekinesisSpellMixin extends AbstractSpell
 {
+    @Shadow
+    private final ResourceLocation spellId = ResourceLocation.fromNamespaceAndPath(IronsSpellbooks.MODID, "telekinesis");
+
     @Shadow
     protected abstract int getRange(int spellLevel, LivingEntity caster);
 

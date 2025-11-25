@@ -17,7 +17,7 @@ public class ClientInputEventsMixin
     @Inject(method="clientMouseScrolled", at = @At("TAIL"))
     private static void clientMouseScrolled(InputEvent.MouseScrollingEvent event, CallbackInfo ci)
     {
-        if (ClientMagicData.isCasting())
+        if (ClientMagicData.isCasting() && ClientMagicData.getCastingSpellId().equals("telekinesis"))
         {
             if (event.getScrollDeltaY() > 0)
             {
@@ -27,14 +27,16 @@ public class ClientInputEventsMixin
             {
                 PacketDistributor.sendToServer(new TelekinesisPushPullData(TelekinesisPushPullData.sDown));
             }
+            event.setCanceled(true);
         }
     }
 
     @Inject(method="onUseInput", at = @At("TAIL"))
     private static void onUseInput(InputEvent.InteractionKeyMappingTriggered event, CallbackInfo ci)
     {
-        if (ClientMagicData.isCasting() && event.isAttack())
+        if (ClientMagicData.isCasting() && event.isAttack() && ClientMagicData.getCastingSpellId().equals("telekinesis"))
         {
+            event.setSwingHand(true);
             PacketDistributor.sendToServer(new TelekinesisPushPullData(TelekinesisPushPullData.tThrow));
         }
     }
@@ -42,7 +44,7 @@ public class ClientInputEventsMixin
     @Inject(method="handleInputEvent", at = @At("HEAD"))
     private static void handleInputEvent(int button, int action, CallbackInfo ci)
     {
-        if (ClientMagicData.isCasting() && button == InputConstants.MOUSE_BUTTON_MIDDLE)
+        if (ClientMagicData.isCasting() && button == InputConstants.MOUSE_BUTTON_MIDDLE && ClientMagicData.getCastingSpellId().equals("telekinesis"))
         {
             PacketDistributor.sendToServer(new TelekinesisPushPullData(TelekinesisPushPullData.tStop));
         }
