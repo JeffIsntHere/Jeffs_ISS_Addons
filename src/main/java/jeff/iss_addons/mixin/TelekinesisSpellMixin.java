@@ -19,6 +19,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.EntityHitResult;
@@ -105,10 +106,11 @@ public abstract class TelekinesisSpellMixin extends AbstractSpell
     }
 
     @Unique
-    public double jeffsissaddons$volume(Entity entity)
+    public double jeffsissaddons$mass(Entity entity)
     {
         var bb = entity.getBoundingBox();
-        return bb.getXsize() * bb.getYsize() * bb.getZsize();
+        //root 6 because bounding box sizes != mass
+        return Math.pow(bb.getXsize() * bb.getYsize() * bb.getZsize(), 1.0/6.0);
     }
 
     @Unique
@@ -117,11 +119,11 @@ public abstract class TelekinesisSpellMixin extends AbstractSpell
         Vec3 deltaMovement = target.getDeltaMovement();
         deltaMovement.scale(Math.min(force.length() / deltaMovement.length(), 0.15f));
         Vec3 finalForce = deltaMovement.add(force);
-        var casterVolume = Math.pow(jeffsissaddons$volume(caster), 0.5);
-        var targetVolume = Math.pow(jeffsissaddons$volume(target), 0.5);
-        var sumVolume = casterVolume + targetVolume;
-        target.setDeltaMovement(finalForce.scale(casterVolume/sumVolume));
-        caster.setDeltaMovement(caster.getDeltaMovement().add(finalForce.scale(-targetVolume/sumVolume)));
+        var casterMass = jeffsissaddons$mass(target);
+        var targetMass = jeffsissaddons$mass(caster);
+        var sumMass = casterMass + targetMass;
+        target.setDeltaMovement(finalForce.scale(targetMass/sumMass));
+        caster.setDeltaMovement(caster.getDeltaMovement().add(finalForce.scale(-casterMass/sumMass)));
         if (target instanceof LivingEntity livingEntity)
         {
             if (force.y > 0) {
@@ -159,7 +161,7 @@ public abstract class TelekinesisSpellMixin extends AbstractSpell
                 {
                     Utils.serverSideCancelCast(serverPlayer);
                 }
-                var force = entity.getForward().normalize().scale(20.0f * strength);
+                var force = entity.getForward().normalize().scale(5.0f * strength);
                 jeffsissaddons$applyForce(force, target, entity, playerMagicData);
                 playerMagicData.setAdditionalCastData(null);
                 return;
