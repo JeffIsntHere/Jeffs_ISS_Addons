@@ -5,18 +5,16 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import jeff.iss_addons.JeffsISSAddons;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
-import org.jetbrains.annotations.NotNull;
+import net.neoforged.neoforge.common.ModConfigSpec;
 
-import java.io.File;
+import java.io.*;
+import java.nio.file.Files;
+import java.util.Arrays;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
 
 //public class RecipeAdder implements PreparableReloadListener
 //{
@@ -36,38 +34,102 @@ import java.util.concurrent.Executor;
 //    }
 //}
 
-public class RecipeAdder extends SimpleJsonResourceReloadListener
+public class RecipeAdder
 {
-    private static final Gson _gson = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
-    public static final String _dst = net.neoforged.neoforge.common.CommonHooks.prefixNamespace(ResourceLocation.fromNamespaceAndPath(JeffsISSAddons.MODID, Registries.RECIPE.location().getPath()));
-    public static final String _src = net.neoforged.neoforge.common.CommonHooks.prefixNamespace(ResourceLocation.fromNamespaceAndPath(JeffsISSAddons.MODID, "recipes"));
-
-    public RecipeAdder()
+    public static void copyIfEnabled(File prefixDst, File prefixSrc, String name, boolean enabled)
     {
-        super(_gson, _src);
+        if (!enabled)
+        {
+            return;
+        }
+        var src = new File(prefixSrc.getAbsolutePath() + name);
+        var dst = new File(prefixDst.getAbsolutePath() + name);
+        try
+        {
+            if (!dst.mkdirs())
+            {
+                JeffsISSAddons.LOGGER.error("failed to create file at : " + dst.getAbsolutePath());
+                return;
+            }
+        }
+        catch(SecurityException securityException)
+        {
+            JeffsISSAddons.LOGGER.error("failed to create file due to security exception at : " + dst.getAbsolutePath());
+            JeffsISSAddons.LOGGER.error(Arrays.toString(securityException.getStackTrace()));
+            return;
+        }
+        try (var writer = new FileOutputStream(dst))
+        {
+            Files.copy(src.toPath(), writer);
+        }
+        catch (IOException ioException)
+        {
+            JeffsISSAddons.LOGGER.error("failed to copy from : " + src.getAbsolutePath() + " to " + dst.getAbsolutePath());
+            JeffsISSAddons.LOGGER.error(Arrays.toString(ioException.getStackTrace()));
+        }
     }
 
-    @Override
-    protected void apply(Map<ResourceLocation, JsonElement> object, ResourceManager resourceManager, ProfilerFiller profiler)
+    public static void copyIfEnabled(File prefixDst, File prefixSrc, String name, ModConfigSpec.ConfigValue<Boolean> enabled)
     {
-        var file = new File(_dst);
-        JeffsISSAddons.LOGGER.info("reloading! : " + file.getAbsolutePath());
-        if (file.exists() && !file.delete())
+        copyIfEnabled(prefixDst, prefixSrc, name, enabled.get());
+    }
+
+    public static void work()
+    {
+        File[] files = null;
+        try
         {
-            JeffsISSAddons.LOGGER.info("failed to delete temp datapack : " + file.getAbsolutePath());
+            var directory = new File(net.neoforged.neoforge.common.CommonHooks.prefixNamespace(ResourceLocation.withDefaultNamespace(JeffsISSAddons._configStartup._modsFolderPath.get())));
+            JeffsISSAddons.LOGGER.info("reloading! : " + directory.getAbsolutePath());
+            files = directory.listFiles((dir, name) -> name.startsWith(JeffsISSAddons._configStartup._modPrefix.get()));
         }
-        if (!file.mkdirs())
+        catch(SecurityException securityException)
         {
-            JeffsISSAddons.LOGGER.info("failed to create folders : " + file.getAbsolutePath());
+            JeffsISSAddons.LOGGER.error("read access not given, aborting recipes");
+            JeffsISSAddons.LOGGER.error(Arrays.toString(securityException.getStackTrace()));
         }
-        for (var k : object.entrySet())
+        if (files == null)
         {
-            JeffsISSAddons.LOGGER.info("found recipes: " + new File(net.neoforged.neoforge.common.CommonHooks.prefixNamespace(k.getKey())).getAbsolutePath());
+            JeffsISSAddons.LOGGER.error("files was null, aborting recipes");
+            return;
         }
-//        for (var k : object.entrySet())
-//        {
-//            //try(k.getKey().)
-//        }
+        if (files.length == 0)
+        {
+            JeffsISSAddons.LOGGER.error("mod prefix did not match any files, aborting recipes.");
+            return;
+        }
+        if (files.length > 1)
+        {
+            JeffsISSAddons.LOGGER.warn("expected to find only 1 file, found : " + files.length);
+            JeffsISSAddons.LOGGER.warn("default behavior : use first found : " + files[0].getAbsolutePath());
+        }
+        var src = new File(files[0].getAbsolutePath() + JeffsISSAddons._configStartup._recipeSource);
+        var dst = new File(files[0].getAbsolutePath() + JeffsISSAddons._configStartup._recipeDst);
+        JeffsISSAddons.LOGGER.info("loaded src file : " + src.getAbsolutePath());
+        JeffsISSAddons.LOGGER.info("loaded dst file : " + dst.getAbsolutePath());
+        try
+        {
+            if (dst.exists() && !dst.delete())
+            {
+                JeffsISSAddons.LOGGER.error("failed to delete temp datapack : " + dst.getAbsolutePath());
+                JeffsISSAddons.LOGGER.error("aborting recipes.");
+                return;
+            }
+            if (!dst.mkdirs())
+            {
+                JeffsISSAddons.LOGGER.error("failed to create folders : " + dst.getAbsolutePath());
+                JeffsISSAddons.LOGGER.error("aborting recipes.");
+                return;
+            }
+            copyIfEnabled(dst, src, "arcane_essence.json", JeffsISSAddons._configStartup._enableArcaneEssenceRecipe);
+            copyIfEnabled(dst, src, "cinder_essence.json", JeffsISSAddons._configStartup._enableCinderEssenceRecipe);
+            copyIfEnabled(dst, src, "common_ink.json", JeffsISSAddons._configStartup._enableCommonInkRecipe);
+        }
+        catch(SecurityException securityException)
+        {
+            JeffsISSAddons.LOGGER.error("failed to create file due to security exception at : " + dst.getAbsolutePath());
+            JeffsISSAddons.LOGGER.error(Arrays.toString(securityException.getStackTrace()));
+        }
     }
 }
 

@@ -50,7 +50,7 @@ public abstract class CounterspellMixin extends AbstractSpell
     @Inject(method="onCast", at = @At("HEAD"), cancellable = true)
     public void jeffsissaddons$onCast(Level world, int spellLevel, LivingEntity entity, CastSource castSource, MagicData playerMagicData, CallbackInfo ci)
     {
-        if (!JeffsISSAddons._config._enableCounterspellMod.get())
+        if (!JeffsISSAddons._configServer._enableCounterspellMod.get())
         {
             return;
         }

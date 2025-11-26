@@ -18,7 +18,7 @@ public class ScrollMixin
     @Inject(method="removeScrollAfterCast", at = @At("HEAD"), cancellable = true)
     protected void jeffsissaddons$removeScrollAfterCast(ServerPlayer serverPlayer, ItemStack stack, CallbackInfo ci)
     {
-        if (!JeffsISSAddons._config._enableScrollMod.get())
+        if (!JeffsISSAddons._configServer._enableScrollMod.get())
         {
             return;
         }
@@ -32,23 +32,23 @@ public class ScrollMixin
         var spellRarity = spellData.getRarity();
         if (spellRarity == SpellRarity.COMMON)
         {
-            damage = JeffsISSAddons._config._scrollHealthDamage.get().getFirst().floatValue() * 2.0f;
+            damage = JeffsISSAddons._configServer._scrollHealthDamage.get().getFirst().floatValue() * 2.0f;
         }
         else if (spellRarity == SpellRarity.UNCOMMON)
         {
-            damage = JeffsISSAddons._config._scrollHealthDamage.get().get(1).floatValue() * 2.0f;
+            damage = JeffsISSAddons._configServer._scrollHealthDamage.get().get(1).floatValue() * 2.0f;
         }
         else if (spellRarity == SpellRarity.RARE)
         {
-            damage = JeffsISSAddons._config._scrollHealthDamage.get().get(2).floatValue() * 2.0f;
+            damage = JeffsISSAddons._configServer._scrollHealthDamage.get().get(2).floatValue() * 2.0f;
         }
         else if (spellRarity == SpellRarity.EPIC)
         {
-            damage = JeffsISSAddons._config._scrollHealthDamage.get().get(3).floatValue() * 2.0f;
+            damage = JeffsISSAddons._configServer._scrollHealthDamage.get().get(3).floatValue() * 2.0f;
         }
         else if (spellRarity == SpellRarity.LEGENDARY)
         {
-            damage = JeffsISSAddons._config._scrollHealthDamage.get().get(4).floatValue() * 2.0f;
+            damage = JeffsISSAddons._configServer._scrollHealthDamage.get().get(4).floatValue() * 2.0f;
         }
         serverPlayer.hurt(SpellDamageSource.source(serverPlayer, spellData.getSpell()), damage);
     }

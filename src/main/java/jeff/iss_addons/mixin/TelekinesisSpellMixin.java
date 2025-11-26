@@ -77,7 +77,7 @@ public abstract class TelekinesisSpellMixin extends AbstractSpell
     @Inject(method="checkPreCastConditions", at = @At("HEAD"), cancellable = true)
     public void jeffsissaddons$checkPreCastConditions(Level level, int spellLevel, LivingEntity entity, MagicData playerMagicData, CallbackInfoReturnable<Boolean> cir)
     {
-        if (!JeffsISSAddons._config._enableTelekinesisMod.get())
+        if (!JeffsISSAddons._configServer._enableTelekinesisMod.get())
         {
             return;
         }
@@ -153,7 +153,7 @@ public abstract class TelekinesisSpellMixin extends AbstractSpell
     @Inject(method="handleTelekinesis", at = @At("HEAD"), cancellable = true)
     private void jeffsissaddons$handleTelekinesis(ServerLevel world, LivingEntity entity, MagicData playerMagicData, float strength, CallbackInfo ci)
     {
-        if (!JeffsISSAddons._config._enableTelekinesisMod.get())
+        if (!JeffsISSAddons._configServer._enableTelekinesisMod.get())
         {
             return;
         }
