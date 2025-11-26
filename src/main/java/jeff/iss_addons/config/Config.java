@@ -18,23 +18,23 @@ public class Config
     public Config(ModConfigSpec.Builder builder)
     {
         builder.push("Recipes");
-        _enableArcaneEssenceRecipe = builder.define("Enable Arcane Essence Recipe: ", true);
-        _enableCinderEssenceRecipe = builder.define("Enable Cinder Essence Recipe: ", true);
-        _enableCommonInkEssenceRecipe = builder.define("Enable Common Ink Recipe: ", true);
+        _enableArcaneEssenceRecipe = builder.define("Enable Arcane Essence Recipe", true);
+        _enableCinderEssenceRecipe = builder.define("Enable Cinder Essence Recipe", true);
+        _enableCommonInkEssenceRecipe = builder.define("Enable Common Ink Recipe", true);
         builder.pop();
 
         builder.push("Scroll");
-        _enableScrollMod = builder.define("Enable: ", true);
+        _enableScrollMod = builder.define("Enable", true);
         builder.comment("damage to player (in hearts) per scroll use, ordered from common to legendary.");
-        _scrollHealthDamage = builder.define("Damage: ", Arrays.asList(1.0f, 1.5f, 2.0f, 2.5f, 3.0f), new EnsureListSameSize<>(5));
+        _scrollHealthDamage = builder.define("Damage", Arrays.asList(1.0f, 1.5f, 2.0f, 2.5f, 3.0f), new EnsureListSameSize<>(5));
         builder.pop();
 
         builder.push("Telekinesis");
-        _enableTelekinesisMod = builder.define("Enable: ", true);
+        _enableTelekinesisMod = builder.define("Enable", true);
         builder.pop();
 
         builder.push("Counterspell");
-        _enableCounterspellMod = builder.define("Enable: ", true);
+        _enableCounterspellMod = builder.define("Enable", true);
         builder.pop();
     }
 }

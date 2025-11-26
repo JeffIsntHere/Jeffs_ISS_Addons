@@ -11,6 +11,5 @@
   ],
   "injectors": {
     "defaultRequire": 1
-  },
-  "plugin": "jeff.iss_addons.config.MixinConfig"
+  }
 }
