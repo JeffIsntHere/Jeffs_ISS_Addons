@@ -32,23 +32,23 @@ public class ScrollMixin
         var spellRarity = spellData.getRarity();
         if (spellRarity == SpellRarity.COMMON)
         {
-            damage = JeffsISSAddons._config._scrollHealthDamage.get().getFirst() * 2;
+            damage = JeffsISSAddons._config._scrollHealthDamage.get().getFirst().floatValue() * 2.0f;
         }
         else if (spellRarity == SpellRarity.UNCOMMON)
         {
-            damage = JeffsISSAddons._config._scrollHealthDamage.get().get(1) * 2;
+            damage = JeffsISSAddons._config._scrollHealthDamage.get().get(1).floatValue() * 2.0f;
         }
         else if (spellRarity == SpellRarity.RARE)
         {
-            damage = JeffsISSAddons._config._scrollHealthDamage.get().get(2) * 2;
+            damage = JeffsISSAddons._config._scrollHealthDamage.get().get(2).floatValue() * 2.0f;
         }
         else if (spellRarity == SpellRarity.EPIC)
         {
-            damage = JeffsISSAddons._config._scrollHealthDamage.get().get(3) * 2;
+            damage = JeffsISSAddons._config._scrollHealthDamage.get().get(3).floatValue() * 2.0f;
         }
         else if (spellRarity == SpellRarity.LEGENDARY)
         {
-            damage = JeffsISSAddons._config._scrollHealthDamage.get().get(4) * 2;
+            damage = JeffsISSAddons._config._scrollHealthDamage.get().get(4).floatValue() * 2.0f;
         }
         serverPlayer.hurt(SpellDamageSource.source(serverPlayer, spellData.getSpell()), damage);
     }
