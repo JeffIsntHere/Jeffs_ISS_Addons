@@ -10,6 +10,7 @@ import io.redspace.ironsspellbooks.network.casting.SyncTargetingDataPacket;
 import io.redspace.ironsspellbooks.registries.MobEffectRegistry;
 import io.redspace.ironsspellbooks.spells.eldritch.TelekinesisSpell;
 import jeff.iss_addons.ExtendedTelekinesisData;
+import jeff.iss_addons.JeffsISSAddons;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundSetActionBarTextPacket;
@@ -19,7 +20,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.EntityHitResult;
@@ -27,6 +27,10 @@ import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.entity.PartEntity;
 import net.neoforged.neoforge.network.PacketDistributor;
 import org.spongepowered.asm.mixin.*;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(TelekinesisSpell.class)
 public abstract class TelekinesisSpellMixin extends AbstractSpell
@@ -70,9 +74,14 @@ public abstract class TelekinesisSpellMixin extends AbstractSpell
         }
     }
 
-    @Overwrite
-    public boolean checkPreCastConditions(Level level, int spellLevel, LivingEntity entity, MagicData playerMagicData)
+    @Inject(method="checkPreCastConditions", at = @At("HEAD"), cancellable = true)
+    public void jeffsissaddons$checkPreCastConditions(Level level, int spellLevel, LivingEntity entity, MagicData playerMagicData, CallbackInfoReturnable<Boolean> cir)
     {
+        if (!JeffsISSAddons._config._enableTelekinesisMod.get())
+        {
+            return;
+        }
+        cir.cancel();
         Vec3 start = entity.getEyePosition();
         Vec3 end = entity.getLookAngle().normalize().scale(getRange(spellLevel, entity)).add(start);
         var result = Utils.raycastForEntity(level, entity, start, end, true, .15f, ExtendedTelekinesisData::telekinesisSpellCheck);
@@ -93,16 +102,18 @@ public abstract class TelekinesisSpellMixin extends AbstractSpell
                     {
                         serverPlayer.connection.send(new ClientboundSetActionBarTextPacket(Component.translatable("ui.irons_spellbooks.cast_error_target").withStyle(ChatFormatting.RED)));
                     }
-                    return false;
+                    cir.setReturnValue(false);
+                    return;
                 }
             }
-            return true;
+            cir.setReturnValue(true);
+            return;
         }
         if (entity instanceof ServerPlayer serverPlayer)
         {
             serverPlayer.connection.send(new ClientboundSetActionBarTextPacket(Component.translatable("ui.irons_spellbooks.cast_error_target").withStyle(ChatFormatting.RED)));
         }
-        return false;
+        cir.setReturnValue(false);
     }
 
     @Unique
@@ -139,9 +150,14 @@ public abstract class TelekinesisSpellMixin extends AbstractSpell
         }
     }
 
-    @Overwrite
-    private void handleTelekinesis(ServerLevel world, LivingEntity entity, MagicData playerMagicData, float strength)
+    @Inject(method="handleTelekinesis", at = @At("HEAD"), cancellable = true)
+    private void jeffsissaddons$handleTelekinesis(ServerLevel world, LivingEntity entity, MagicData playerMagicData, float strength, CallbackInfo ci)
     {
+        if (!JeffsISSAddons._config._enableTelekinesisMod.get())
+        {
+            return;
+        }
+        ci.cancel();
         if (playerMagicData.getAdditionalCastData() instanceof ExtendedTelekinesisData extendedTelekinesisData)
         {
             var target = extendedTelekinesisData.entity(world);

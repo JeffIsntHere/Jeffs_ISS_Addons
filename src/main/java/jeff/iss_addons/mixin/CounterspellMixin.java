@@ -15,6 +15,7 @@ import io.redspace.ironsspellbooks.entity.mobs.AntiMagicSusceptible;
 import io.redspace.ironsspellbooks.entity.mobs.IMagicSummon;
 import io.redspace.ironsspellbooks.spells.ender.CounterspellSpell;
 import jeff.iss_addons.ExtendedTelekinesisData;
+import jeff.iss_addons.JeffsISSAddons;
 import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.resources.ResourceLocation;
@@ -29,8 +30,10 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.common.NeoForge;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(CounterspellSpell.class)
 public abstract class CounterspellMixin extends AbstractSpell
@@ -44,8 +47,14 @@ public abstract class CounterspellMixin extends AbstractSpell
     @Shadow
     public abstract CastType getCastType();
 
-    @Overwrite
-    public void onCast(Level world, int spellLevel, LivingEntity entity, CastSource castSource, MagicData playerMagicData) {
+    @Inject(method="onCast", at = @At("HEAD"), cancellable = true)
+    public void jeffsissaddons$onCast(Level world, int spellLevel, LivingEntity entity, CastSource castSource, MagicData playerMagicData, CallbackInfo ci)
+    {
+        if (!JeffsISSAddons._config._enableCounterspellMod.get())
+        {
+            return;
+        }
+        ci.cancel();
         Vec3 start = entity.getEyePosition();
         Vec3 end = start.add(entity.getForward().normalize().scale(80));
         HitResult hitResult = Utils.raycastForEntity(entity.level(), entity, start, end, true, 0.35f, ExtendedTelekinesisData::counterSpellCheck);

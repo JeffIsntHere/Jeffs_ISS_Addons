@@ -4,17 +4,25 @@ import io.redspace.ironsspellbooks.api.magic.MagicData;
 import io.redspace.ironsspellbooks.api.spells.SpellRarity;
 import io.redspace.ironsspellbooks.damage.SpellDamageSource;
 import io.redspace.ironsspellbooks.item.Scroll;
+import jeff.iss_addons.JeffsISSAddons;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Overwrite;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(Scroll.class)
 public class ScrollMixin
 {
-    @Overwrite
-    protected void removeScrollAfterCast(ServerPlayer serverPlayer, ItemStack stack)
+    @Inject(method="removeScrollAfterCast", at = @At("HEAD"), cancellable = true)
+    protected void jeffsissaddons$removeScrollAfterCast(ServerPlayer serverPlayer, ItemStack stack, CallbackInfo ci)
     {
+        if (!JeffsISSAddons._config._enableScrollMod.get())
+        {
+            return;
+        }
+        ci.cancel();
         if (serverPlayer.isCreative())
         {
             return;
@@ -24,24 +32,23 @@ public class ScrollMixin
         var spellRarity = spellData.getRarity();
         if (spellRarity == SpellRarity.COMMON)
         {
-            //1 heart
-            damage = 2.0f;
+            damage = JeffsISSAddons._config._scrollHealthDamage.get().getFirst() * 2;
         }
         else if (spellRarity == SpellRarity.UNCOMMON)
         {
-            damage = 3.0f;
+            damage = JeffsISSAddons._config._scrollHealthDamage.get().get(1) * 2;
         }
         else if (spellRarity == SpellRarity.RARE)
         {
-            damage = 4.0f;
+            damage = JeffsISSAddons._config._scrollHealthDamage.get().get(2) * 2;
         }
         else if (spellRarity == SpellRarity.EPIC)
         {
-            damage = 5.0f;
+            damage = JeffsISSAddons._config._scrollHealthDamage.get().get(3) * 2;
         }
         else if (spellRarity == SpellRarity.LEGENDARY)
         {
-            damage = 6.0f;
+            damage = JeffsISSAddons._config._scrollHealthDamage.get().get(4) * 2;
         }
         serverPlayer.hurt(SpellDamageSource.source(serverPlayer, spellData.getSpell()), damage);
     }
