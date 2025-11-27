@@ -9,6 +9,7 @@ public class ConfigStartup
     public final ModConfigSpec.ConfigValue<String> _modsFolderPath;
     public final ModConfigSpec.ConfigValue<String> _dataPacksFolderPath;
     public final ModConfigSpec.ConfigValue<String> _modPrefix;
+    public final ModConfigSpec.ConfigValue<String> _targetFolder;
     public final String _recipeSource = "/recipes/";
     public final ModConfigSpec.ConfigValue<Boolean> _enableArcaneEssenceRecipe;
     public final ModConfigSpec.ConfigValue<Boolean> _enableCinderEssenceRecipe;
@@ -21,6 +22,7 @@ public class ConfigStartup
         _modsFolderPath = builder.define("Mods Folder Path","mods");
         _modPrefix = builder.define("Mod Prefix", JeffsISSAddons.MODID);
         _dataPacksFolderPath = builder.define("Datapacks Folder Path", "datapacks");
+        _targetFolder = builder.define("Target Folder", "");
         builder.pop();
 
         builder.push("Recipes");

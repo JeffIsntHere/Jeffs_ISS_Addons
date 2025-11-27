@@ -6,9 +6,11 @@ import jeff.iss_addons.recipes.RecipeAdder;
 import net.minecraft.world.level.storage.LevelResource;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.AddReloadListenerEvent;
 import net.neoforged.neoforge.event.server.ServerAboutToStartEvent;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
+import net.neoforged.neoforge.server.ServerLifecycleHooks;
 
 import java.io.File;
 
@@ -30,10 +32,31 @@ public class Events
         );
     }
 
+    private static void recipes()
+    {
+        if (ServerLifecycleHooks.getCurrentServer() != null)
+        {
+            JeffsISSAddons._configStartup._targetFolder.set(ServerLifecycleHooks.getCurrentServer().getWorldPath(LevelResource.DATAPACK_DIR).toFile().getAbsolutePath());
+            JeffsISSAddons._configStartup._targetFolder.save();
+        }
+        if (JeffsISSAddons._configStartup._targetFolder.get().isEmpty() && !new File(JeffsISSAddons._configStartup._targetFolder.get()).exists())
+        {
+            return;
+        }
+        var target = JeffsISSAddons._configStartup._targetFolder.get() + "\\" + JeffsISSAddons._configStartup._modPrefix.get();
+        RecipeAdder.work(target + "\\data\\" + JeffsISSAddons._configStartup._modPrefix.get() + "\\recipe");
+        copyResource(new File(target + "\\pack.mcmeta"), "/pack_marker.json");
+    }
+
     @SubscribeEvent
     public static void serverAboutToStartEvent(ServerAboutToStartEvent serverAboutToStartEvent)
     {
-        RecipeAdder.work();
-        copyResource(new File(serverAboutToStartEvent.getServer().getWorldPath(LevelResource.DATAPACK_DIR).toFile().getAbsolutePath() + "\\" + JeffsISSAddons._configStartup._modPrefix.get() + "\\pack.mcmeta"), "/pack_marker.json");
+        recipes();
+    }
+
+    @SubscribeEvent
+    public static void addReloadListenerEvent(AddReloadListenerEvent reloadListenerEvent)
+    {
+        recipes();
     }
 }

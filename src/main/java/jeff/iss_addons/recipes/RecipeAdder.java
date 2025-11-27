@@ -73,10 +73,10 @@ public class RecipeAdder
         return (path.delete());
     }
 
-    public static void work()
+    public static void work(String dstPath)
     {
         assert ServerLifecycleHooks.getCurrentServer() != null;
-        var dst = new File(ServerLifecycleHooks.getCurrentServer().getWorldPath(LevelResource.DATAPACK_DIR).toFile().getAbsolutePath() + "\\" + JeffsISSAddons._configStartup._modPrefix.get() + "\\data\\" + JeffsISSAddons._configStartup._modPrefix.get() + "\\recipe");
+        var dst = new File(dstPath);
         JeffsISSAddons.LOGGER.info("recipe source : " + JeffsISSAddons._configStartup._recipeSource);
         JeffsISSAddons.LOGGER.info("loaded dst file : " + dst.getAbsolutePath());
         try
