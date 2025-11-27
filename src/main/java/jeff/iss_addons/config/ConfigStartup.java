@@ -9,8 +9,7 @@ public class ConfigStartup
     public final ModConfigSpec.ConfigValue<String> _modsFolderPath;
     public final ModConfigSpec.ConfigValue<String> _dataPacksFolderPath;
     public final ModConfigSpec.ConfigValue<String> _modPrefix;
-    public final String _recipeSource = "\\data\\" + JeffsISSAddons.MODID + "\\recipes\\";
-    public final String _recipeDst = "\\data\\" + JeffsISSAddons.MODID + "\\recipe\\";
+    public final String _recipeSource = "/recipes/";
     public final ModConfigSpec.ConfigValue<Boolean> _enableArcaneEssenceRecipe;
     public final ModConfigSpec.ConfigValue<Boolean> _enableCinderEssenceRecipe;
     public final ModConfigSpec.ConfigValue<Boolean> _enableCommonInkRecipe;
