@@ -3,12 +3,11 @@ package jeff.iss_addons.config;
 import jeff.iss_addons.JeffsISSAddons;
 import net.neoforged.neoforge.common.ModConfigSpec;
 
-import java.util.Arrays;
-import java.util.List;
 
 public class ConfigStartup
 {
     public final ModConfigSpec.ConfigValue<String> _modsFolderPath;
+    public final ModConfigSpec.ConfigValue<String> _dataPacksFolderPath;
     public final ModConfigSpec.ConfigValue<String> _modPrefix;
     public final String _recipeSource = "\\data\\" + JeffsISSAddons.MODID + "\\recipes\\";
     public final String _recipeDst = "\\data\\" + JeffsISSAddons.MODID + "\\recipe\\";
@@ -22,6 +21,7 @@ public class ConfigStartup
         builder.comment("do not change anything in misc if you don't know what you're doing!");
         _modsFolderPath = builder.define("Mods Folder Path","mods");
         _modPrefix = builder.define("Mod Prefix", JeffsISSAddons.MODID);
+        _dataPacksFolderPath = builder.define("Datapacks Folder Path", "datapacks");
         builder.pop();
 
         builder.push("Recipes");

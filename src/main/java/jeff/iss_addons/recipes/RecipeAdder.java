@@ -36,14 +36,13 @@ import java.util.Map;
 
 public class RecipeAdder
 {
-    public static void copyIfEnabled(File prefixDst, File prefixSrc, String name, boolean enabled)
+    public static void copyIfEnabled(File prefixDst, String name, boolean enabled)
     {
         if (!enabled)
         {
             return;
         }
-        var src = new File(prefixSrc.getAbsolutePath() + name);
-        var dst = new File(prefixDst.getAbsolutePath() + name);
+        var dst = new File(prefixDst.getAbsolutePath() + "\\" + name);
         try
         {
             if (!dst.mkdirs())
@@ -60,52 +59,60 @@ public class RecipeAdder
         }
         try (var writer = new FileOutputStream(dst))
         {
-            Files.copy(src.toPath(), writer);
+            try (var inputStream = JeffsISSAddons._configStartup.getClass().getResourceAsStream(JeffsISSAddons._configStartup._recipeSource + name))
+            {
+                if (inputStream == null)
+                {
+                    JeffsISSAddons.LOGGER.error("failed to copy, inputstream was null");
+                    return;
+                }
+                inputStream.transferTo(writer);
+            }
         }
         catch (IOException ioException)
         {
-            JeffsISSAddons.LOGGER.error("failed to copy from : " + src.getAbsolutePath() + " to " + dst.getAbsolutePath());
+            JeffsISSAddons.LOGGER.error("failed to copy from resource in : " + JeffsISSAddons._configStartup._recipeSource + name + " to " + dst.getAbsolutePath());
             JeffsISSAddons.LOGGER.error(Arrays.toString(ioException.getStackTrace()));
         }
     }
 
-    public static void copyIfEnabled(File prefixDst, File prefixSrc, String name, ModConfigSpec.ConfigValue<Boolean> enabled)
+    public static void copyIfEnabled(File prefixDst, String name, ModConfigSpec.ConfigValue<Boolean> enabled)
     {
-        copyIfEnabled(prefixDst, prefixSrc, name, enabled.get());
+        copyIfEnabled(prefixDst, name, enabled.get());
     }
 
     public static void work()
     {
         File[] files = null;
-        try
-        {
-            var directory = new File(net.neoforged.neoforge.common.CommonHooks.prefixNamespace(ResourceLocation.withDefaultNamespace(JeffsISSAddons._configStartup._modsFolderPath.get())));
-            JeffsISSAddons.LOGGER.info("reloading! : " + directory.getAbsolutePath());
-            files = directory.listFiles((dir, name) -> name.startsWith(JeffsISSAddons._configStartup._modPrefix.get()));
-        }
-        catch(SecurityException securityException)
-        {
-            JeffsISSAddons.LOGGER.error("read access not given, aborting recipes");
-            JeffsISSAddons.LOGGER.error(Arrays.toString(securityException.getStackTrace()));
-        }
-        if (files == null)
-        {
-            JeffsISSAddons.LOGGER.error("files was null, aborting recipes");
-            return;
-        }
-        if (files.length == 0)
-        {
-            JeffsISSAddons.LOGGER.error("mod prefix did not match any files, aborting recipes.");
-            return;
-        }
-        if (files.length > 1)
-        {
-            JeffsISSAddons.LOGGER.warn("expected to find only 1 file, found : " + files.length);
-            JeffsISSAddons.LOGGER.warn("default behavior : use first found : " + files[0].getAbsolutePath());
-        }
-        var src = new File(files[0].getAbsolutePath() + JeffsISSAddons._configStartup._recipeSource);
-        var dst = new File(files[0].getAbsolutePath() + JeffsISSAddons._configStartup._recipeDst);
-        JeffsISSAddons.LOGGER.info("loaded src file : " + src.getAbsolutePath());
+        //var directory = new File(net.neoforged.neoforge.common.CommonHooks.prefixNamespace(ResourceLocation.withDefaultNamespace(JeffsISSAddons._configStartup._modsFolderPath.get())));
+//        JeffsISSAddons.LOGGER.info("reloading! : " + directory.getAbsolutePath());
+//        try
+//        {
+//            files = directory.listFiles((dir, name) -> name.startsWith(JeffsISSAddons._configStartup._modPrefix.get()));
+//        }
+//        catch(SecurityException securityException)
+//        {
+//            JeffsISSAddons.LOGGER.error("read access not given, aborting recipes");
+//            JeffsISSAddons.LOGGER.error(Arrays.toString(securityException.getStackTrace()));
+//        }
+//        if (files == null)
+//        {
+//            JeffsISSAddons.LOGGER.error("files was null, aborting recipes");
+//            return;
+//        }
+//        if (files.length == 0)
+//        {
+//            JeffsISSAddons.LOGGER.error("mod prefix did not match any files, aborting recipes.");
+//            return;
+//        }
+//        if (files.length > 1)
+//        {
+//            JeffsISSAddons.LOGGER.warn("expected to find only 1 file, found : " + files.length);
+//            JeffsISSAddons.LOGGER.warn("default behavior : use first found : " + files[0].getAbsolutePath());
+//        }
+//        var src = new File(files[0].getAbsolutePath() + JeffsISSAddons._configStartup._recipeSource);
+        var dst = new File(net.neoforged.neoforge.common.CommonHooks.prefixNamespace(ResourceLocation.withDefaultNamespace(JeffsISSAddons._configStartup._dataPacksFolderPath.get())) + "\\" + JeffsISSAddons._configStartup._modPrefix + "\\data\\" + JeffsISSAddons._configStartup._modPrefix + "\\recipes");
+        //JeffsISSAddons.LOGGER.info("loaded src file : " + src.getAbsolutePath());
         JeffsISSAddons.LOGGER.info("loaded dst file : " + dst.getAbsolutePath());
         try
         {
@@ -121,9 +128,9 @@ public class RecipeAdder
                 JeffsISSAddons.LOGGER.error("aborting recipes.");
                 return;
             }
-            copyIfEnabled(dst, src, "arcane_essence.json", JeffsISSAddons._configStartup._enableArcaneEssenceRecipe);
-            copyIfEnabled(dst, src, "cinder_essence.json", JeffsISSAddons._configStartup._enableCinderEssenceRecipe);
-            copyIfEnabled(dst, src, "common_ink.json", JeffsISSAddons._configStartup._enableCommonInkRecipe);
+            copyIfEnabled(dst, "arcane_essence.json", JeffsISSAddons._configStartup._enableArcaneEssenceRecipe);
+            copyIfEnabled(dst, "cinder_essence.json", JeffsISSAddons._configStartup._enableCinderEssenceRecipe);
+            copyIfEnabled(dst, "common_ink.json", JeffsISSAddons._configStartup._enableCommonInkRecipe);
         }
         catch(SecurityException securityException)
         {
