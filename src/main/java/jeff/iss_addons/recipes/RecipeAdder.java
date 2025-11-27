@@ -2,7 +2,9 @@ package jeff.iss_addons.recipes;
 
 import jeff.iss_addons.JeffsISSAddons;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.storage.LevelResource;
 import net.neoforged.neoforge.common.ModConfigSpec;
+import net.neoforged.neoforge.server.ServerLifecycleHooks;
 
 import java.io.*;
 import java.util.Arrays;
@@ -73,7 +75,8 @@ public class RecipeAdder
 
     public static void work()
     {
-        var dst = new File(net.neoforged.neoforge.common.CommonHooks.prefixNamespace(ResourceLocation.withDefaultNamespace(JeffsISSAddons._configStartup._dataPacksFolderPath.get())) + "\\" + JeffsISSAddons._configStartup._modPrefix.get() + "\\data\\" + JeffsISSAddons._configStartup._modPrefix.get() + "\\recipe");
+        assert ServerLifecycleHooks.getCurrentServer() != null;
+        var dst = new File(ServerLifecycleHooks.getCurrentServer().getWorldPath(LevelResource.DATAPACK_DIR).toFile().getAbsolutePath() + "\\" + JeffsISSAddons._configStartup._modPrefix.get() + "\\data\\" + JeffsISSAddons._configStartup._modPrefix.get() + "\\recipe");
         JeffsISSAddons.LOGGER.info("recipe source : " + JeffsISSAddons._configStartup._recipeSource);
         JeffsISSAddons.LOGGER.info("loaded dst file : " + dst.getAbsolutePath());
         try

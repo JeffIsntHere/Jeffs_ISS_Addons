@@ -3,10 +3,10 @@ package jeff.iss_addons;
 import jeff.iss_addons.network.common.TelekinesisPushPullData;
 import jeff.iss_addons.network.server.TelekinesisPushPull;
 import jeff.iss_addons.recipes.RecipeAdder;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.storage.LevelResource;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.event.AddReloadListenerEvent;
+import net.neoforged.neoforge.event.server.ServerAboutToStartEvent;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
@@ -31,9 +31,9 @@ public class Events
     }
 
     @SubscribeEvent
-    public static void addReloadListenerEvent(AddReloadListenerEvent addReloadListenerEvent)
+    public static void serverAboutToStartEvent(ServerAboutToStartEvent serverAboutToStartEvent)
     {
         RecipeAdder.work();
-        copyResource(new File(net.neoforged.neoforge.common.CommonHooks.prefixNamespace(ResourceLocation.withDefaultNamespace(JeffsISSAddons._configStartup._dataPacksFolderPath.get()))+ "\\" + JeffsISSAddons._configStartup._modPrefix.get() + "\\pack.mcmeta"), "/pack_marker.json");
+        copyResource(new File(serverAboutToStartEvent.getServer().getWorldPath(LevelResource.DATAPACK_DIR).toFile().getAbsolutePath() + "\\" + JeffsISSAddons._configStartup._modPrefix.get() + "\\pack.mcmeta"), "/pack_marker.json");
     }
 }
