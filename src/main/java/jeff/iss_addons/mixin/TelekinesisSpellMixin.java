@@ -21,6 +21,8 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.monster.Enemy;
+import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.EntityHitResult;
@@ -126,7 +128,7 @@ public abstract class TelekinesisSpellMixin extends AbstractSpell
     }
 
     @Unique
-    public void jeffsissaddons$applyForce(Vec3 force, Entity target, LivingEntity caster, MagicData magicData)
+    public void jeffsissaddons$applyForce(Vec3 force, Entity target, LivingEntity caster, MagicData magicData, Double targetClamp)
     {
         Vec3 deltaMovement = target.getDeltaMovement();
         deltaMovement.scale(Math.min(force.length() / deltaMovement.length(), JeffsISSAddons._configServer._telekinesisTargetPreviousDeltaCarryOver.get()));
@@ -134,17 +136,20 @@ public abstract class TelekinesisSpellMixin extends AbstractSpell
         var casterMass = jeffsissaddons$mass(target);
         var targetMass = jeffsissaddons$mass(caster);
         var sumMass = casterMass + targetMass;
-        target.setDeltaMovement(Util.clampVec3(finalForce.scale(targetMass/sumMass), JeffsISSAddons._configServer._telekinesisTargetDeltaClamp.get()));
+        target.setDeltaMovement(Util.clampVec3(finalForce.scale(targetMass/sumMass), targetClamp));
         caster.setDeltaMovement(Util.clampVec3(caster.getDeltaMovement().add(finalForce.scale(-casterMass/sumMass)), JeffsISSAddons._configServer._telekinesisCasterDeltaClamp.get()));
         if (target instanceof LivingEntity livingEntity)
         {
-            if (force.y > 0) {
+            boolean damageHostile = JeffsISSAddons._configServer._telekinesisDamageHostileVehicle.get() && livingEntity instanceof Enemy;
+            boolean markHurt = false;
+            if (force.y > 0 || (!damageHostile && !JeffsISSAddons._configServer._telekinesisDamageVehicleVertical.get() && livingEntity.getPassengers().contains(caster)))
+            {
                 livingEntity.resetFallDistance();
             }
             if ((magicData.getCastDurationRemaining()) % 10 == 0) {
                 Vec3 travel = new Vec3(livingEntity.getX() - livingEntity.xOld, livingEntity.getY() - livingEntity.yOld, livingEntity.getZ() - livingEntity.zOld);
                 int airborne = (int) (travel.x * travel.x + travel.z * travel.z) / 2;
-                if (JeffsISSAddons._configServer._telekinesisDamageVehicle.get() || !livingEntity.getPassengers().contains(caster))
+                if (damageHostile || JeffsISSAddons._configServer._telekinesisDamageVehicleHorizontal.get() || !livingEntity.getPassengers().contains(caster))
                 {
                     livingEntity.addEffect(new MobEffectInstance(MobEffectRegistry.AIRBORNE, 31, airborne));
                 }
@@ -182,7 +187,7 @@ public abstract class TelekinesisSpellMixin extends AbstractSpell
                     Utils.serverSideCancelCast(serverPlayer);
                 }
                 var force = entity.getForward().normalize().scale(JeffsISSAddons._configServer._telekinesisThrowPower.get() * strength);
-                jeffsissaddons$applyForce(force, target, entity, playerMagicData);
+                jeffsissaddons$applyForce(force, target, entity, playerMagicData, (JeffsISSAddons._configServer._telekinesisThrowDeltaClamp.get() == 0.0) ? JeffsISSAddons._configServer._telekinesisTargetDeltaClamp.get() : JeffsISSAddons._configServer._telekinesisThrowDeltaClamp.get());
                 playerMagicData.setAdditionalCastData(null);
                 return;
             }
@@ -194,7 +199,7 @@ public abstract class TelekinesisSpellMixin extends AbstractSpell
                 multiplier = 1;
             }
             var force = position.subtract(target.position()).scale(multiplier * strength * (1.0f/world.tickRateManager().tickrate()));
-            jeffsissaddons$applyForce(force, target, entity, playerMagicData);
+            jeffsissaddons$applyForce(force, target, entity, playerMagicData, JeffsISSAddons._configServer._telekinesisTargetDeltaClamp.get());
         }
     }
 }
