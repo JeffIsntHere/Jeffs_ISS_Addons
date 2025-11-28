@@ -6,13 +6,13 @@
       "item" : "irons_spellbooks:arcane_essence"
     },
     {
-      "item" : "minecraft:blaze_powder"
+      "item" : "minecraft:blaze_rod"
     },
     {
-      "item" : "minecraft:brown_dye"
+      "item" : "minecraft:obsidian"
     },
     {
-      "item" : "minecraft:black_dye"
+      "item" : "minecraft:ghast_tear"
     }
   ],
   "result" :

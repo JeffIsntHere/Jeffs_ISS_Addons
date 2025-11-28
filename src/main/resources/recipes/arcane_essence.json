@@ -3,18 +3,15 @@
   "ingredients" :
   [
     {
-      "item" : "minecraft:blue_dye"
+      "item" : "minecraft:lapis_lazuli"
     },
     {
-      "item" : "minecraft:purple_dye"
-    },
-    {
-      "item" : "minecraft:flint"
+      "item" : "minecraft:amethyst_shard"
     }
   ],
   "result" :
   {
     "id" : "irons_spellbooks:arcane_essence",
-    "count" : 1
+    "count" : 3
   }
 }
