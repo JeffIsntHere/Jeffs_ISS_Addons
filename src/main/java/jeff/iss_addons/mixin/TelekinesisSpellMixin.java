@@ -11,6 +11,7 @@ import io.redspace.ironsspellbooks.registries.MobEffectRegistry;
 import io.redspace.ironsspellbooks.spells.eldritch.TelekinesisSpell;
 import jeff.iss_addons.ExtendedTelekinesisData;
 import jeff.iss_addons.JeffsISSAddons;
+import jeff.iss_addons.Util;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundSetActionBarTextPacket;
@@ -77,7 +78,7 @@ public abstract class TelekinesisSpellMixin extends AbstractSpell
     @Inject(method="checkPreCastConditions", at = @At("HEAD"), cancellable = true)
     public void jeffsissaddons$checkPreCastConditions(Level level, int spellLevel, LivingEntity entity, MagicData playerMagicData, CallbackInfoReturnable<Boolean> cir)
     {
-        if (!JeffsISSAddons._configServer._enableTelekinesisMod.get())
+        if (!JeffsISSAddons._configServer._telekinesisEnable.get())
         {
             return;
         }
@@ -128,13 +129,13 @@ public abstract class TelekinesisSpellMixin extends AbstractSpell
     public void jeffsissaddons$applyForce(Vec3 force, Entity target, LivingEntity caster, MagicData magicData)
     {
         Vec3 deltaMovement = target.getDeltaMovement();
-        deltaMovement.scale(Math.min(force.length() / deltaMovement.length(), 0.15f));
+        deltaMovement.scale(Math.min(force.length() / deltaMovement.length(), JeffsISSAddons._configServer._telekinesisTargetPreviousDeltaCarryOver.get()));
         Vec3 finalForce = deltaMovement.add(force);
         var casterMass = jeffsissaddons$mass(target);
         var targetMass = jeffsissaddons$mass(caster);
         var sumMass = casterMass + targetMass;
-        target.setDeltaMovement(finalForce.scale(targetMass/sumMass));
-        caster.setDeltaMovement(caster.getDeltaMovement().add(finalForce.scale(-casterMass/sumMass)));
+        target.setDeltaMovement(Util.clampVec3(finalForce.scale(targetMass/sumMass), JeffsISSAddons._configServer._telekinesisTargetDeltaClamp.get()));
+        caster.setDeltaMovement(Util.clampVec3(caster.getDeltaMovement().add(finalForce.scale(-casterMass/sumMass)), JeffsISSAddons._configServer._telekinesisCasterDeltaClamp.get()));
         if (target instanceof LivingEntity livingEntity)
         {
             if (force.y > 0) {
@@ -143,7 +144,10 @@ public abstract class TelekinesisSpellMixin extends AbstractSpell
             if ((magicData.getCastDurationRemaining()) % 10 == 0) {
                 Vec3 travel = new Vec3(livingEntity.getX() - livingEntity.xOld, livingEntity.getY() - livingEntity.yOld, livingEntity.getZ() - livingEntity.zOld);
                 int airborne = (int) (travel.x * travel.x + travel.z * travel.z) / 2;
-                livingEntity.addEffect(new MobEffectInstance(MobEffectRegistry.AIRBORNE, 31, airborne));
+                if (JeffsISSAddons._configServer._telekinesisDamageVehicle.get() || !livingEntity.getPassengers().contains(caster))
+                {
+                    livingEntity.addEffect(new MobEffectInstance(MobEffectRegistry.AIRBORNE, 31, airborne));
+                }
                 livingEntity.addEffect(new MobEffectInstance(MobEffectRegistry.ANTIGRAVITY, 11, 0));
             }
             livingEntity.hurtMarked = true;
@@ -153,7 +157,7 @@ public abstract class TelekinesisSpellMixin extends AbstractSpell
     @Inject(method="handleTelekinesis", at = @At("HEAD"), cancellable = true)
     private void jeffsissaddons$handleTelekinesis(ServerLevel world, LivingEntity entity, MagicData playerMagicData, float strength, CallbackInfo ci)
     {
-        if (!JeffsISSAddons._configServer._enableTelekinesisMod.get())
+        if (!JeffsISSAddons._configServer._telekinesisEnable.get())
         {
             return;
         }
@@ -177,7 +181,7 @@ public abstract class TelekinesisSpellMixin extends AbstractSpell
                 {
                     Utils.serverSideCancelCast(serverPlayer);
                 }
-                var force = entity.getForward().normalize().scale(5.0f * strength);
+                var force = entity.getForward().normalize().scale(JeffsISSAddons._configServer._telekinesisThrowPower.get() * strength);
                 jeffsissaddons$applyForce(force, target, entity, playerMagicData);
                 playerMagicData.setAdditionalCastData(null);
                 return;

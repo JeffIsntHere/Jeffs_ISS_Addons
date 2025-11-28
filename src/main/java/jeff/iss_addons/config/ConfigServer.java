@@ -11,8 +11,17 @@ public class ConfigServer
     public final ModConfigSpec.ConfigValue<List<Double>> _scrollDamage;
     public final ModConfigSpec.ConfigValue<Double> _scrollScaler;
     public final ModConfigSpec.ConfigValue<Boolean> _scrollConsumeMana;
-    public final ModConfigSpec.ConfigValue<Boolean> _enableTelekinesisMod;
-    public final ModConfigSpec.ConfigValue<Boolean> _enableCounterspellMod;
+    public final ModConfigSpec.ConfigValue<Boolean> _telekinesisEnable;
+    public final ModConfigSpec.ConfigValue<Double> _telekinesisThrowPower;
+    public final ModConfigSpec.ConfigValue<Double> _telekinesisTargetPreviousDeltaCarryOver;
+    public final ModConfigSpec.ConfigValue<Double> _telekinesisTargetDeltaClamp;
+    public final ModConfigSpec.ConfigValue<Double> _telekinesisCasterDeltaClamp;
+    public final ModConfigSpec.ConfigValue<Boolean> _telekinesisDamageVehicle;
+    public final ModConfigSpec.ConfigValue<Boolean> _counterSpellEnable;
+    public final ModConfigSpec.ConfigValue<Boolean> _counterSpellDeflectsNonMagicProjectiles;
+    public final ModConfigSpec.ConfigValue<Double> _counterSpellBaseDelta;
+    public final ModConfigSpec.ConfigValue<Double> _counterSpellDeltaMultiplier;
+    public final ModConfigSpec.ConfigValue<Double> _counterSpellMaxDelta;
     public ConfigServer(ModConfigSpec.Builder builder)
     {
         builder.push("Scroll");
@@ -26,11 +35,26 @@ public class ConfigServer
         builder.pop();
 
         builder.push("Telekinesis");
-        _enableTelekinesisMod = builder.define("Enable", true);
+        _telekinesisEnable = builder.define("Enable", true);
+        _telekinesisThrowPower = builder.define("Base throw power", 5.0);
+        builder.comment("how much of the target's previous movement is to be used for the new movement calculation");
+        builder.comment("lower values tend to be more snappy, higher values tend to be more jittery");
+        _telekinesisTargetPreviousDeltaCarryOver = builder.define("Telekinesis target previous delta carry over", 0.15);
+        builder.comment("set to 0 if you don't want to limit the movement delta of the target / caster");
+        _telekinesisCasterDeltaClamp = builder.define("Caster delta clamp", 0.0);
+        _telekinesisTargetDeltaClamp = builder.define("Target delta clamp", 0.0);
+        builder.comment("for context, you can ride a mob that you are using telekinesis on");
+        builder.comment("setting this to false will disable the damage");
+        _telekinesisDamageVehicle = builder.define("Damage Vehicle", false);
         builder.pop();
 
         builder.push("Counterspell");
-        _enableCounterspellMod = builder.define("Enable", true);
+        _counterSpellEnable = builder.define("Enable", true);
+        _counterSpellDeflectsNonMagicProjectiles = builder.define("Deflects non-magic projectiles", true);
+        _counterSpellBaseDelta = builder.define("Base delta", 1.0);
+        _counterSpellDeltaMultiplier = builder.define("Delta multiplier", 1.15);
+        builder.comment("Set to 0 to disable.");
+        _counterSpellMaxDelta = builder.define("Counter spell max delta", 0.0);
         builder.pop();
     }
 }

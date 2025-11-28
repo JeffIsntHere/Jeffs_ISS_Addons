@@ -13,9 +13,11 @@ import io.redspace.ironsspellbooks.capabilities.magic.RecastResult;
 import io.redspace.ironsspellbooks.effect.MagicMobEffect;
 import io.redspace.ironsspellbooks.entity.mobs.AntiMagicSusceptible;
 import io.redspace.ironsspellbooks.entity.mobs.IMagicSummon;
+import io.redspace.ironsspellbooks.entity.spells.AbstractMagicProjectile;
 import io.redspace.ironsspellbooks.spells.ender.CounterspellSpell;
 import jeff.iss_addons.ExtendedTelekinesisData;
 import jeff.iss_addons.JeffsISSAddons;
+import jeff.iss_addons.Util;
 import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.resources.ResourceLocation;
@@ -50,7 +52,7 @@ public abstract class CounterspellMixin extends AbstractSpell
     @Inject(method="onCast", at = @At("HEAD"), cancellable = true)
     public void jeffsissaddons$onCast(Level world, int spellLevel, LivingEntity entity, CastSource castSource, MagicData playerMagicData, CallbackInfo ci)
     {
-        if (!JeffsISSAddons._configServer._enableCounterspellMod.get())
+        if (!JeffsISSAddons._configServer._counterSpellEnable.get())
         {
             return;
         }
@@ -68,13 +70,17 @@ public abstract class CounterspellMixin extends AbstractSpell
                 {
                     case Projectile projectile ->
                     {
+                        if (!JeffsISSAddons._configServer._counterSpellDeflectsNonMagicProjectiles.get() && !(projectile instanceof AbstractMagicProjectile))
+                        {
+                            break;
+                        }
                         projectile.setOwner(entity);
                         var force = projectile.getDeltaMovement().length();
-                        if (force < 1)
+                        if (force < JeffsISSAddons._configServer._counterSpellBaseDelta.get())
                         {
-                            force = 1;
+                            force = JeffsISSAddons._configServer._counterSpellBaseDelta.get();
                         }
-                        projectile.setDeltaMovement(entity.getForward().normalize().scale(force * 1.15));
+                        projectile.setDeltaMovement(Util.clampVec3(entity.getForward().normalize().scale(force * JeffsISSAddons._configServer._counterSpellDeltaMultiplier.get()), JeffsISSAddons._configServer._counterSpellMaxDelta.get()));
                     }
                     case AntiMagicSusceptible antiMagicSusceptible ->
                     {
