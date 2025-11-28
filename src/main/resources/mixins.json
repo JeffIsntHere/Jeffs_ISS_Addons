@@ -4,6 +4,7 @@
   "package": "jeff.iss_addons.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
+    "CastSourceMixin",
     "ClientInputEventsMixin",
     "CounterspellMixin",
     "ScrollMixin",
