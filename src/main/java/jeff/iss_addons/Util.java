@@ -12,4 +12,14 @@ public final class Util
         }
         return vec3.normalize().scale(clampValue);
     }
+    public static Vec3 rotateVec3(Vec3 vector, Vec3 axis, double theta)
+    {
+        //https://math.stackexchange.com/questions/511370/how-to-rotate-one-vector-about-another
+        var vectorComponent1 = axis.scale(vector.dot(axis)/axis.dot(axis));
+        var vectorComponent2 = vector.subtract(vectorComponent1);
+        var buffer = axis.cross(vectorComponent2);
+        var vectorComponent2Length =vectorComponent2.length();
+        var vector3 = vectorComponent2.scale(Math.cos(theta)/vectorComponent2Length).add(buffer.scale(Math.sin(theta)/buffer.length())).scale(vectorComponent2Length);
+        return vector3.add(vectorComponent1);
+    }
 }

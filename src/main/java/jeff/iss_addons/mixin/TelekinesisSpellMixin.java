@@ -138,6 +138,7 @@ public abstract class TelekinesisSpellMixin extends AbstractSpell
         var sumMass = casterMass + targetMass;
         target.setDeltaMovement(Util.clampVec3(finalForce.scale(targetMass/sumMass), targetClamp));
         caster.setDeltaMovement(Util.clampVec3(caster.getDeltaMovement().add(finalForce.scale(-casterMass/sumMass)), JeffsISSAddons._configServer._telekinesisCasterDeltaClamp.get()));
+        target.hurtMarked = true;
         if (target instanceof LivingEntity livingEntity)
         {
             boolean damageHostile = JeffsISSAddons._configServer._telekinesisDamageHostileVehicle.get() && livingEntity instanceof Enemy;
@@ -155,7 +156,6 @@ public abstract class TelekinesisSpellMixin extends AbstractSpell
                 }
                 livingEntity.addEffect(new MobEffectInstance(MobEffectRegistry.ANTIGRAVITY, 11, 0));
             }
-            livingEntity.hurtMarked = true;
         }
     }
 

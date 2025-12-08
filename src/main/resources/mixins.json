@@ -8,7 +8,9 @@
     "ClientInputEventsMixin",
     "CounterspellMixin",
     "ScrollMixin",
-    "TelekinesisSpellMixin"
+    "TelekinesisSpellMixin",
+    "GustColliderMixin",
+    "BlackHoleMixin"
   ],
   "injectors": {
     "defaultRequire": 1

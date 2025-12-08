@@ -81,6 +81,7 @@ public abstract class CounterspellMixin extends AbstractSpell
                             force = JeffsISSAddons._configServer._counterSpellBaseDelta.get();
                         }
                         projectile.setDeltaMovement(Util.clampVec3(entity.getForward().normalize().scale(force * JeffsISSAddons._configServer._counterSpellDeltaMultiplier.get()), JeffsISSAddons._configServer._counterSpellMaxDelta.get()));
+                        projectile.hurtMarked = true;
                     }
                     case AntiMagicSusceptible antiMagicSusceptible ->
                     {
