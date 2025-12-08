@@ -22,7 +22,6 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.monster.Enemy;
-import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.EntityHitResult;
@@ -51,14 +50,14 @@ public abstract class TelekinesisSpellMixin extends AbstractSpell
     public abstract CastType getCastType();
 
     @Unique
-    public void jeffsissaddons$handleProjectile(Projectile projectile, LivingEntity caster, MagicData magicData)
+    public void jeffsissaddons$handleEntity(Entity entity, LivingEntity caster, MagicData magicData)
     {
-        magicData.setAdditionalCastData(new ExtendedTelekinesisData(caster, projectile, 0.0f, this.getRange(magicData.getCastingSpellLevel(), caster) * 5.0f));
+        magicData.setAdditionalCastData(new ExtendedTelekinesisData(caster, entity, 0.0f, this.getRange(magicData.getCastingSpellLevel(), caster) * 5.0f));
         if (caster instanceof ServerPlayer serverPlayer)
         {
             //pray this is unused....
             //PacketDistributor.sendToPlayer(serverPlayer, new SyncTargetingDataPacket(livingEntity, this));
-            serverPlayer.connection.send(new ClientboundSetActionBarTextPacket(Component.translatable("ui.irons_spellbooks.spell_target_success", projectile.getDisplayName().getString(), this.getDisplayName(serverPlayer)).withStyle(ChatFormatting.GREEN)));
+            serverPlayer.connection.send(new ClientboundSetActionBarTextPacket(Component.translatable("ui.irons_spellbooks.spell_target_success", entity.getDisplayName().getString(), this.getDisplayName(serverPlayer)).withStyle(ChatFormatting.GREEN)));
         }
     }
 
@@ -93,7 +92,7 @@ public abstract class TelekinesisSpellMixin extends AbstractSpell
             var entityHit = entityHitResult.getEntity();
             switch (entityHit)
             {
-                case Projectile projectile -> jeffsissaddons$handleProjectile(projectile, entity, playerMagicData);
+                case Projectile projectile -> jeffsissaddons$handleEntity(projectile, entity, playerMagicData);
                 case LivingEntity livingEntity -> jeffsissaddons$handleLiving(livingEntity, entity, playerMagicData);
                 case PartEntity<?> partEntity when partEntity.getParent() instanceof LivingEntity livingParent && !entity.equals(livingParent) ->
                         jeffsissaddons$handleLiving(livingParent, entity, playerMagicData);
@@ -101,6 +100,11 @@ public abstract class TelekinesisSpellMixin extends AbstractSpell
                         jeffsissaddons$handleLiving(livingRooted, entity, playerMagicData);
                 default ->
                 {
+                    if (JeffsISSAddons._configServer._telekinesisWorksOnEntities.get())
+                    {
+                        jeffsissaddons$handleEntity(entityHit, entity, playerMagicData);
+                        break;
+                    }
                     if (entity instanceof ServerPlayer serverPlayer)
                     {
                         serverPlayer.connection.send(new ClientboundSetActionBarTextPacket(Component.translatable("ui.irons_spellbooks.cast_error_target").withStyle(ChatFormatting.RED)));

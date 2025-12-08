@@ -20,6 +20,7 @@ public class ConfigServer
     public final ModConfigSpec.ConfigValue<Boolean> _telekinesisDamageVehicleHorizontal;
     public final ModConfigSpec.ConfigValue<Boolean> _telekinesisDamageVehicleVertical;
     public final ModConfigSpec.ConfigValue<Boolean> _telekinesisDamageHostileVehicle;
+    public final ModConfigSpec.ConfigValue<Boolean> _telekinesisWorksOnEntities;
     public final ModConfigSpec.ConfigValue<Boolean> _counterSpellEnable;
     public final ModConfigSpec.ConfigValue<Boolean> _counterSpellDeflectsNonMagicProjectiles;
     public final ModConfigSpec.ConfigValue<Double> _counterSpellBaseDelta;
@@ -69,6 +70,7 @@ public class ConfigServer
         _telekinesisDamageVehicleVertical = builder.define("Damage vehicle vertical", false);
         builder.comment("setting this to true will still apply the damage for hostile vehicles.");
         _telekinesisDamageHostileVehicle = builder.define("Damage hostile vehicle", true);
+        _telekinesisWorksOnEntities = builder.define("Works on entities", true);
         builder.pop();
 
         builder.push("Counterspell");
