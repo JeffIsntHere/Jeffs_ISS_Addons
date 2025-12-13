@@ -32,7 +32,7 @@ public class ConfigServer
     public final ModConfigSpec.ConfigValue<Integer> _blackHoleDamageEveryTicks;
     public final ModConfigSpec.ConfigValue<Double> _blackHoleSpinPullRatio;
     public final ModConfigSpec.ConfigValue<Double> _blackHoleSpinPower;
-    public final ModConfigSpec.ConfigValue<Double> _blackHoleDeltaMultiplier;
+    public final ModConfigSpec.ConfigValue<Double> _blackHoleEntityDeltaMultiplier;
     public final ModConfigSpec.ConfigValue<Double> _blackHoleBlockRandomnessStart;
     public final ModConfigSpec.ConfigValue<Double> _blackHoleBlockRandomnessAdder;
     public final ModConfigSpec.ConfigValue<Integer> _blackHoleBlockFailRetryCount;
@@ -40,6 +40,7 @@ public class ConfigServer
     public final ModConfigSpec.ConfigValue<Double> _blackHoleBlockKillWhenDistanceLessThan;
     public final ModConfigSpec.ConfigValue<Double> _blackHoleBlockRadiusMultiplier;
     public final ModConfigSpec.ConfigValue<List<String>> _blackHoleDisallowedBlocks;
+    public final ModConfigSpec.ConfigValue<Double> _blackHoleDeltaMultiplier;
     public ConfigServer(ModConfigSpec.Builder builder)
     {
         builder.push("Scroll");
@@ -96,8 +97,8 @@ public class ConfigServer
         _blackHoleSpinPullRatio = builder.define("Black hole spin pull ratio", 0.8);
         builder.comment("How fast objects spin in this black hole");
         _blackHoleSpinPower = builder.define("Black hole spin power", 1.5);
-        builder.comment("How much of the previous velocity to keep.");
-        _blackHoleDeltaMultiplier = builder.define("Black hole delta multiplier", 0.25);
+        builder.comment("How much of the previous velocity of the entities inside the blackhole to keep.");
+        _blackHoleEntityDeltaMultiplier = builder.define("Black hole delta multiplier", 0.25);
         builder.comment("How much to deviate by the axis of the black hole's rotation.");
         _blackHoleBlockRandomnessStart = builder.define("Black hole block randomness start", 0.4);
         builder.comment("How much to add to the randomness for every fail at getting a block.");
@@ -116,6 +117,9 @@ public class ConfigServer
                         "minecraft:spawner", "minecraft:trial_spawner",
                         "minecraft:vault", "irons_spellbooks:cinderous_soul_rune",
                         "irons_spellbooks:ice_spider_egg"));
+        builder.comment("Values > 1 = black hole becomes increasingly faster.");
+        builder.comment("Values = 0 = black hole stops moving");
+        _blackHoleDeltaMultiplier = builder.define("Black Hole delta multiplier", 0.92);
         builder.pop();
     }
 }

@@ -17,6 +17,7 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.item.FallingBlockEntity;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.level.ClipContext;
@@ -60,6 +61,15 @@ public abstract class BlackHoleMixin extends Projectile
 
     @Shadow
     private void updateTrackingEntities() {}
+
+    @Shadow
+    public void setDuration(int duration) {}
+
+    @Shadow
+    public int getDuration()
+    {
+        return 0;
+    }
 
     @Unique
     private Vec3 jeffsissaddons$_up;
@@ -116,6 +126,7 @@ public abstract class BlackHoleMixin extends Projectile
         }
     }
 
+    //perhaps add crafting via blackhole gravity?
     @Inject(method="tick", at=@At("HEAD"), cancellable = true)
     public void jeffsissaddons$tick(CallbackInfo ci)
     {
@@ -127,6 +138,10 @@ public abstract class BlackHoleMixin extends Projectile
         super.tick();
         var bb = this.getBoundingBox();
         float radius = (float) (bb.getXsize());
+        this.noPhysics = true;
+        move(MoverType.SELF, getDeltaMovement());
+        var blackHoleMovement = getDeltaMovement().scale(JeffsISSAddons._configServer._blackHoleDeltaMultiplier.get());
+        setDeltaMovement(blackHoleMovement);
         if (JeffsISSAddons._configServer._blackHoleDamageEveryTicks.get() < 1)
         {
             JeffsISSAddons._configServer._blackHoleDamageEveryTicks.set(1);
@@ -135,6 +150,7 @@ public abstract class BlackHoleMixin extends Projectile
         boolean hitTick = this.tickCount % JeffsISSAddons._configServer._blackHoleDamageEveryTicks.get() == 0;
         Vec3 center = bb.getCenter();
         var up = jeffsissaddons$up();
+        var sm = 0.0F;
         if (ServerConfigs.SPELL_GREIFING.get() && !level().isClientSide())
         {
             var dir = new Vec3(1, 0, -up.x/up.z).normalize();
@@ -146,11 +162,10 @@ public abstract class BlackHoleMixin extends Projectile
                 BlockHitResult hitResult;
                 int ii = 0;
                 double randomness = JeffsISSAddons._configServer._blackHoleBlockRandomnessStart.get();
-                var clampValue = radius * JeffsISSAddons._configServer._blackHoleBlockRadiusMultiplier.get();
+                var clampValue = Math.pow(radius, 0.85) * JeffsISSAddons._configServer._blackHoleBlockRadiusMultiplier.get();
                 do
                 {
-                    var dst = center.add(dir.add(Utils.getRandomVec3(1).normalize().scale(randomness)).scale(clampValue));
-                    Util.clampVec3(dst, clampValue);
+                    var dst = center.add(dir.add(Utils.getRandomVec3(1).normalize().scale(randomness)).normalize().scale(clampValue));
                     hitResult = Utils.raycastForBlock(level(), center, dst, ClipContext.Fluid.NONE);
                     ++ii;
                     randomness += JeffsISSAddons._configServer._blackHoleBlockRandomnessAdder.get();
@@ -171,15 +186,18 @@ public abstract class BlackHoleMixin extends Projectile
                     FallingBlockEntity fallingBlockEntity = FallingBlockEntity.fall(level(), blockpos, blockState);
                     fallingBlockEntity.setDeltaMovement(dir.scale(-.1));
                     level().addFreshEntity(fallingBlockEntity);
+                    ++sm;
                 }
             }
         }
+        setDuration(getDuration() - (int)(sm/radius));
         //we don't care abt lag.
         updateTrackingEntities();
         for (Entity entity : trackingEntities)
         {
             if (entity != getOwner() && !DamageSources.isFriendlyFireBetween(getOwner(), entity) && !entity.isSpectator())
             {
+                entity.move(MoverType.SELF, blackHoleMovement);
                 float distance = (float) center.distanceTo(entity.position());
                 if (distance > radius)
                 {
@@ -188,7 +206,7 @@ public abstract class BlackHoleMixin extends Projectile
                 var direction = center.subtract(entity.position()).normalize();
                 var spinDirection = up.cross(direction);
                 var spinValue = Math.clamp(JeffsISSAddons._configServer._blackHoleSpinPullRatio.get(), 0, 1);
-                entity.setDeltaMovement(direction.scale(1 - spinValue).add(spinDirection.scale(spinValue)).scale(JeffsISSAddons._configServer._blackHoleSpinPower.get()).add(entity.getDeltaMovement().scale(JeffsISSAddons._configServer._blackHoleDeltaMultiplier.get())));
+                entity.setDeltaMovement(direction.scale(1 - spinValue).add(spinDirection.scale(spinValue)).scale(JeffsISSAddons._configServer._blackHoleSpinPower.get()).add(entity.getDeltaMovement().scale(JeffsISSAddons._configServer._blackHoleEntityDeltaMultiplier.get())));
                 entity.fallDistance = 0;
                 if (!level().isClientSide())
                 {

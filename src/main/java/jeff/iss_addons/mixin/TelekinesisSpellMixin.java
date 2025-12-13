@@ -5,6 +5,7 @@ import io.redspace.ironsspellbooks.api.spells.AbstractSpell;
 import io.redspace.ironsspellbooks.api.spells.CastType;
 import io.redspace.ironsspellbooks.api.magic.MagicData;
 import io.redspace.ironsspellbooks.api.util.Utils;
+import io.redspace.ironsspellbooks.entity.spells.black_hole.BlackHole;
 import io.redspace.ironsspellbooks.entity.spells.root.PreventDismount;
 import io.redspace.ironsspellbooks.network.casting.SyncTargetingDataPacket;
 import io.redspace.ironsspellbooks.registries.MobEffectRegistry;
@@ -21,6 +22,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.level.Level;
@@ -146,7 +148,6 @@ public abstract class TelekinesisSpellMixin extends AbstractSpell
         if (target instanceof LivingEntity livingEntity)
         {
             boolean damageHostile = JeffsISSAddons._configServer._telekinesisDamageHostileVehicle.get() && livingEntity instanceof Enemy;
-            boolean markHurt = false;
             if (force.y > 0 || (!damageHostile && !JeffsISSAddons._configServer._telekinesisDamageVehicleVertical.get() && livingEntity.getPassengers().contains(caster)))
             {
                 livingEntity.resetFallDistance();
