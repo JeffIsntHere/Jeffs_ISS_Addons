@@ -206,6 +206,7 @@ public abstract class BlackHoleMixin extends Projectile
                 var direction = center.subtract(entity.position()).normalize();
                 var spinDirection = up.cross(direction);
                 var spinValue = Math.clamp(JeffsISSAddons._configServer._blackHoleSpinPullRatio.get(), 0, 1);
+                //TODO: set delta movement based on hitbox size.
                 entity.setDeltaMovement(direction.scale(1 - spinValue).add(spinDirection.scale(spinValue)).scale(JeffsISSAddons._configServer._blackHoleSpinPower.get()).add(entity.getDeltaMovement().scale(JeffsISSAddons._configServer._blackHoleEntityDeltaMultiplier.get())));
                 entity.fallDistance = 0;
                 if (!level().isClientSide())
