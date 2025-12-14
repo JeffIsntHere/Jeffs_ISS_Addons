@@ -5,6 +5,7 @@ import io.redspace.ironsspellbooks.api.util.Utils;
 import io.redspace.ironsspellbooks.capabilities.magic.MagicManager;
 import io.redspace.ironsspellbooks.config.ServerConfigs;
 import io.redspace.ironsspellbooks.damage.DamageSources;
+import io.redspace.ironsspellbooks.entity.spells.AbstractMagicProjectile;
 import io.redspace.ironsspellbooks.entity.spells.black_hole.BlackHole;
 import io.redspace.ironsspellbooks.registries.SoundRegistry;
 import io.redspace.ironsspellbooks.util.ParticleHelper;
@@ -18,6 +19,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MoverType;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.item.FallingBlockEntity;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.level.ClipContext;
@@ -126,7 +128,37 @@ public abstract class BlackHoleMixin extends Projectile
         }
     }
 
-    //perhaps add crafting via blackhole gravity?
+    @Unique
+    protected double jeffsissaddons$mass(Entity entity)
+    {
+        var mass = 10.0;
+        if (entity instanceof FallingBlockEntity)
+        {
+            mass += 10.0;
+        }
+        if (entity instanceof AbstractMagicProjectile abstractMagicProjectile)
+        {
+            mass += Math.pow(Util.volume(entity), 1.2/3.0);
+            mass *= abstractMagicProjectile.getDamage();
+        }
+        if (entity instanceof LivingEntity livingEntity)
+        {
+            mass += 20;
+            mass += livingEntity.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);
+            mass *= livingEntity.getMaxHealth();
+            mass += livingEntity.getAttributeValue(Attributes.ARMOR);
+        }
+        return mass;
+    }
+
+    @Unique
+    protected void jeffsissaddons$applyForce(Entity entity, double mass, Vec3 force)
+    {
+        entity.setDeltaMovement(entity.getDeltaMovement().add(force.normalize().scale(force.length() / (mass + Math.pow(Util.volume(entity), 2)) / 100)));
+        entity.hurtMarked = true;
+    }
+
+    //perhaps add crafting via black hole gravity?
     @Inject(method="tick", at=@At("HEAD"), cancellable = true)
     public void jeffsissaddons$tick(CallbackInfo ci)
     {
@@ -190,9 +222,11 @@ public abstract class BlackHoleMixin extends Projectile
                 }
             }
         }
+        var eventHorizon = Math.pow(radius, 0.5) / 2.2;
         setDuration(getDuration() - (int)(sm/radius));
         //we don't care abt lag.
         updateTrackingEntities();
+        var blackHoleMass = jeffsissaddons$mass(this);
         for (Entity entity : trackingEntities)
         {
             if (entity != getOwner() && !DamageSources.isFriendlyFireBetween(getOwner(), entity) && !entity.isSpectator())
@@ -205,24 +239,38 @@ public abstract class BlackHoleMixin extends Projectile
                 }
                 var direction = center.subtract(entity.position()).normalize();
                 var spinDirection = up.cross(direction);
-                var spinValue = Math.clamp(JeffsISSAddons._configServer._blackHoleSpinPullRatio.get(), 0, 1);
+                var spinValue = Math.pow(distance / radius, 1.0/2.0) * JeffsISSAddons._configServer._blackHoleSpinRatio.get();
+                var entityMass = jeffsissaddons$mass(entity);
+                var force = direction.scale(1 - spinValue).add(spinDirection.scale(spinValue)).scale(JeffsISSAddons._configServer._blackHoleGravity.get() * blackHoleMass * entityMass);
                 //TODO: set delta movement based on hitbox size.
-                entity.setDeltaMovement(direction.scale(1 - spinValue).add(spinDirection.scale(spinValue)).scale(JeffsISSAddons._configServer._blackHoleSpinPower.get()).add(entity.getDeltaMovement().scale(JeffsISSAddons._configServer._blackHoleEntityDeltaMultiplier.get())));
+                jeffsissaddons$applyForce(entity, entityMass, force);
+                jeffsissaddons$applyForce(this, blackHoleMass, force.scale(-1.0));
                 entity.fallDistance = 0;
                 if (!level().isClientSide())
                 {
-                    if (entity instanceof FallingBlockEntity)
+                    if (distance < eventHorizon)
                     {
-                        if (entity.position().distanceTo(center) < JeffsISSAddons._configServer._blackHoleBlockKillWhenDistanceLessThan.get())
+                        switch (entity)
                         {
-                            entity.kill();
-                        }
-                    }
-                    else if (entity instanceof LivingEntity)
-                    {
-                        if (hitTick && entity.position().distanceTo(center) < JeffsISSAddons._configServer._blackHoleDamageRadiusMultiplier.get() * radius)
-                        {
-                            DamageSources.applyDamage(entity, damage, SpellRegistry.BLACK_HOLE_SPELL.get().getDamageSource(this, getOwner()));
+                            case FallingBlockEntity fallingBlockEntity -> entity.kill();
+                            case AbstractMagicProjectile abstractMagicProjectile ->
+                            {
+                                if (Util.volume(entity) < Util.volume(this))
+                                {
+                                    entity.kill();
+                                    setDuration(getDuration() + (int) abstractMagicProjectile.getDamage());
+                                }
+                            }
+                            case LivingEntity livingEntity ->
+                            {
+                                if (hitTick)
+                                {
+                                    DamageSources.applyDamage(entity, damage, SpellRegistry.BLACK_HOLE_SPELL.get().getDamageSource(this, getOwner()));
+                                }
+                            }
+                            default ->
+                            {
+                            }
                         }
                     }
                 }

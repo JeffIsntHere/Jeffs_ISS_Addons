@@ -203,7 +203,7 @@ public abstract class TelekinesisSpellMixin extends AbstractSpell
             {
                 multiplier = 1;
             }
-            var force = position.subtract(target.position()).scale(multiplier * strength * (1.0f/world.tickRateManager().tickrate()));
+            var force = position.subtract(target.position()).scale(multiplier * strength / 20.0f);
             jeffsissaddons$applyForce(force, target, entity, playerMagicData, JeffsISSAddons._configServer._telekinesisTargetDeltaClamp.get());
         }
     }

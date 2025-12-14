@@ -1,5 +1,12 @@
 package jeff.iss_addons;
 
+import io.redspace.ironsspellbooks.entity.spells.AbstractMagicProjectile;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.item.FallingBlockEntity;
+import net.minecraft.world.entity.projectile.AbstractHurtingProjectile;
+import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.phys.Vec3;
 
 public final class Util
@@ -12,6 +19,7 @@ public final class Util
         }
         return vec3.normalize().scale(clampValue);
     }
+
     public static Vec3 rotateVec3(Vec3 vector, Vec3 axis, double theta)
     {
         //https://math.stackexchange.com/questions/511370/how-to-rotate-one-vector-about-another
@@ -21,5 +29,11 @@ public final class Util
         var vectorComponent2Length =vectorComponent2.length();
         var vector3 = vectorComponent2.scale(Math.cos(theta)/vectorComponent2Length).add(buffer.scale(Math.sin(theta)/buffer.length())).scale(vectorComponent2Length);
         return vector3.add(vectorComponent1);
+    }
+
+    public static double volume(Entity entity)
+    {
+        var bb = entity.getBoundingBox();
+        return bb.getXsize() * bb.getYsize() * bb.getZsize();
     }
 }

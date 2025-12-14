@@ -28,16 +28,13 @@ public class ConfigServer
     public final ModConfigSpec.ConfigValue<Double> _counterSpellMaxDelta;
     public final ModConfigSpec.ConfigValue<Boolean> _gustSpellEnable;
     public final ModConfigSpec.ConfigValue<Boolean> _blackHoleEnable;
-    public final ModConfigSpec.ConfigValue<Double> _blackHoleDamageRadiusMultiplier;
     public final ModConfigSpec.ConfigValue<Integer> _blackHoleDamageEveryTicks;
-    public final ModConfigSpec.ConfigValue<Double> _blackHoleSpinPullRatio;
-    public final ModConfigSpec.ConfigValue<Double> _blackHoleSpinPower;
-    public final ModConfigSpec.ConfigValue<Double> _blackHoleEntityDeltaMultiplier;
+    public final ModConfigSpec.ConfigValue<Double> _blackHoleSpinRatio;
+    public final ModConfigSpec.ConfigValue<Double> _blackHoleGravity;
     public final ModConfigSpec.ConfigValue<Double> _blackHoleBlockRandomnessStart;
     public final ModConfigSpec.ConfigValue<Double> _blackHoleBlockRandomnessAdder;
     public final ModConfigSpec.ConfigValue<Integer> _blackHoleBlockFailRetryCount;
     public final ModConfigSpec.ConfigValue<Integer> _blackHoleBlockSpread;
-    public final ModConfigSpec.ConfigValue<Double> _blackHoleBlockKillWhenDistanceLessThan;
     public final ModConfigSpec.ConfigValue<Double> _blackHoleBlockRadiusMultiplier;
     public final ModConfigSpec.ConfigValue<List<String>> _blackHoleDisallowedBlocks;
     public final ModConfigSpec.ConfigValue<Double> _blackHoleDeltaMultiplier;
@@ -89,16 +86,13 @@ public class ConfigServer
 
         builder.push("BlackHole");
         _blackHoleEnable = builder.define("Enable", true);
-        _blackHoleDamageRadiusMultiplier = builder.define("Black hole damage radius multiplier", 0.5);
         builder.comment("Damage will be done every n ticks, min = 1");
         _blackHoleDamageEveryTicks = builder.define("Black hole damage every ticks", 10);
-        builder.comment("Set to 0 if you want the entities this black hole sucks up to just go inside in straight line");
-        builder.comment("Ranges from 0 to 1.");
-        _blackHoleSpinPullRatio = builder.define("Black hole spin pull ratio", 0.8);
-        builder.comment("How fast objects spin in this black hole");
-        _blackHoleSpinPower = builder.define("Black hole spin power", 1.5);
-        builder.comment("How much of the previous velocity of the entities inside the blackhole to keep.");
-        _blackHoleEntityDeltaMultiplier = builder.define("Black hole delta multiplier", 0.25);
+        builder.comment("Higher values = more spinning outwards = easier to escape");
+        builder.comment("Lower values = spins more inwards = harder to escape");
+        _blackHoleSpinRatio = builder.define("Black hole spin ratio", 0.22);
+        builder.comment("How fast entities get sucked into the black hole.");
+        _blackHoleGravity = builder.define("Black hole gravity", 2.2);
         builder.comment("How much to deviate by the axis of the black hole's rotation.");
         _blackHoleBlockRandomnessStart = builder.define("Black hole block randomness start", 0.4);
         builder.comment("How much to add to the randomness for every fail at getting a block.");
@@ -107,9 +101,6 @@ public class ConfigServer
         _blackHoleBlockFailRetryCount = builder.define("Black hole block fail retry count", 3);
         builder.comment("The measure of spread for getting the initial directions for blocks. smaller values = larger spread = less spinny effect & less lag, larger values = smaller spread = more spinny effect & more lag.");
         _blackHoleBlockSpread = builder.define("Black hole block degree delta", 90);
-        builder.comment("The distance of the block to the blackhole for it to be destroyed & drop blocks.");
-        builder.comment("Set to -1 to effectively disable. Be wary, without this option = big lag");
-        _blackHoleBlockKillWhenDistanceLessThan = builder.define("Black hole block kill when distance is less than number", 3.0);
         builder.comment("Some blocks that are within the radius of the black hole are unable to be picked up, resulting in jittering. this multiplier is just to cull them");
         _blackHoleBlockRadiusMultiplier = builder.define("Black hole block radius multiplier", 0.8);
         _blackHoleDisallowedBlocks = builder.define("Black hole disallowed blocks",
