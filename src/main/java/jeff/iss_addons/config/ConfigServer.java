@@ -4,12 +4,14 @@ import net.neoforged.neoforge.common.ModConfigSpec;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Supplier;
 
 public class ConfigServer
 {
     public final ModConfigSpec.ConfigValue<Boolean> _scrollDamagesInsteadOfDisappearing;
     public final ModConfigSpec.ConfigValue<List<Double>> _scrollDamage;
     public final ModConfigSpec.ConfigValue<Double> _scrollScaler;
+    public final ModConfigSpec.ConfigValue<List<? extends String>> _scrollDisableFor;
     public final ModConfigSpec.ConfigValue<Boolean> _scrollConsumeMana;
     public final ModConfigSpec.ConfigValue<Boolean> _telekinesisEnable;
     public final ModConfigSpec.ConfigValue<Double> _telekinesisThrowPower;
@@ -36,8 +38,9 @@ public class ConfigServer
     public final ModConfigSpec.ConfigValue<Integer> _blackHoleBlockFailRetryCount;
     public final ModConfigSpec.ConfigValue<Integer> _blackHoleBlockSpread;
     public final ModConfigSpec.ConfigValue<Double> _blackHoleBlockRadiusMultiplier;
-    public final ModConfigSpec.ConfigValue<List<String>> _blackHoleDisallowedBlocks;
+    public final ModConfigSpec.ConfigValue<List<? extends String>> _blackHoleDisallowedBlocks;
     public final ModConfigSpec.ConfigValue<Double> _blackHoleDeltaMultiplier;
+    public final ModConfigSpec.ConfigValue<Boolean> _blackHoleCanMove;
     public ConfigServer(ModConfigSpec.Builder builder)
     {
         builder.push("Scroll");
@@ -48,6 +51,8 @@ public class ConfigServer
         builder.comment("cooldown is in tick (see minecraft tick), 20 ticks = 1 second by default.");
         _scrollScaler = builder.define("Scaler", 0.001);
         _scrollConsumeMana = builder.define("Consumes mana", true);
+        builder.comment("ex: putting \"heartstop\" will make it so that heartstop scrolls will disappear upon using.");
+        _scrollDisableFor = builder.defineListAllowEmpty("Black hole disallowed blocks", List.of(), () -> "", object -> object instanceof String);
         builder.pop();
 
         builder.push("Telekinesis");
@@ -103,14 +108,15 @@ public class ConfigServer
         _blackHoleBlockSpread = builder.define("Black hole block degree delta", 90);
         builder.comment("Some blocks that are within the radius of the black hole are unable to be picked up, resulting in jittering. this multiplier is just to cull them");
         _blackHoleBlockRadiusMultiplier = builder.define("Black hole block radius multiplier", 0.8);
-        _blackHoleDisallowedBlocks = builder.define("Black hole disallowed blocks",
-                Arrays.asList("minecraft:bedrock", "minecraft:end_portal_frame",
-                        "minecraft:spawner", "minecraft:trial_spawner",
-                        "minecraft:vault", "irons_spellbooks:cinderous_soul_rune",
-                        "irons_spellbooks:ice_spider_egg"));
+        _blackHoleDisallowedBlocks = builder.defineListAllowEmpty("Black hole disallowed blocks", Arrays.asList("minecraft:bedrock", "minecraft:end_portal_frame",
+                "minecraft:spawner", "minecraft:trial_spawner",
+                "minecraft:vault", "irons_spellbooks:cinderous_soul_rune",
+                "irons_spellbooks:ice_spider_egg"), () -> "", object -> object instanceof String);
         builder.comment("Values > 1 = black hole becomes increasingly faster.");
         builder.comment("Values = 0 = black hole stops moving");
         _blackHoleDeltaMultiplier = builder.define("Black Hole delta multiplier", 0.92);
+        builder.comment("If set to false, the black hole can be moved by telekinesis, water, etc.");
+        _blackHoleCanMove = builder.define("Black Hole can move", true);
         builder.pop();
     }
 }

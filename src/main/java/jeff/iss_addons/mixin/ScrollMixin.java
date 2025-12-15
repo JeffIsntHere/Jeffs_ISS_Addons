@@ -23,13 +23,17 @@ public class ScrollMixin
         {
             return;
         }
-        ci.cancel();
         if (serverPlayer.isCreative())
         {
             return;
         }
         var magicData = MagicData.getPlayerMagicData(serverPlayer);
         var spellData = magicData.getCastingSpell();
+        if (JeffsISSAddons._configServer._scrollDisableFor.get().contains(spellData.getSpell().getSpellName()))
+        {
+            return;
+        }
+        ci.cancel();
         var damage = 0.0f;
         var spellRarity = spellData.getRarity();
         var effectiveCooldown = MagicManager.getEffectiveSpellCooldown(spellData.getSpell(), serverPlayer, magicData.getCastSource());

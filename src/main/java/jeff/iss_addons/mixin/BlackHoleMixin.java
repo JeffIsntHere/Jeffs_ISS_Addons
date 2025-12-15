@@ -170,8 +170,15 @@ public abstract class BlackHoleMixin extends Projectile
         super.tick();
         var bb = this.getBoundingBox();
         float radius = (float) (bb.getXsize());
-        this.noPhysics = true;
-        move(MoverType.SELF, getDeltaMovement());
+        if (JeffsISSAddons._configServer._blackHoleCanMove.get())
+        {
+            this.noPhysics = true;
+            move(MoverType.SELF, getDeltaMovement());
+        }
+        else
+        {
+            setDeltaMovement(Vec3.ZERO);
+        }
         var blackHoleMovement = getDeltaMovement().scale(JeffsISSAddons._configServer._blackHoleDeltaMultiplier.get());
         setDeltaMovement(blackHoleMovement);
         if (JeffsISSAddons._configServer._blackHoleDamageEveryTicks.get() < 1)
