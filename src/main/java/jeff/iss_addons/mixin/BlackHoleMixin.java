@@ -21,7 +21,9 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.item.FallingBlockEntity;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.BlockHitResult;
@@ -36,6 +38,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 @Mixin(BlackHole.class)
@@ -234,6 +237,7 @@ public abstract class BlackHoleMixin extends Projectile
         //we don't care abt lag.
         updateTrackingEntities();
         var blackHoleMass = jeffsissaddons$mass(this);
+        var items = new HashMap<ItemStack, Integer>();
         for (Entity entity : trackingEntities)
         {
             if (entity != getOwner() && !DamageSources.isFriendlyFireBetween(getOwner(), entity) && !entity.isSpectator())
@@ -274,6 +278,12 @@ public abstract class BlackHoleMixin extends Projectile
                                 {
                                     DamageSources.applyDamage(entity, damage, SpellRegistry.BLACK_HOLE_SPELL.get().getDamageSource(this, getOwner()));
                                 }
+                            }
+                            case ItemEntity itemEntity ->
+                            {
+                                var item = itemEntity.getItem();
+                                items.putIfAbsent(item, 0);
+                                items.put(item,items.get(item) + 1);
                             }
                             default ->
                             {

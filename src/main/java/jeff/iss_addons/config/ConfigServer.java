@@ -4,7 +4,6 @@ import net.neoforged.neoforge.common.ModConfigSpec;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Supplier;
 
 public class ConfigServer
 {
@@ -41,6 +40,8 @@ public class ConfigServer
     public final ModConfigSpec.ConfigValue<List<? extends String>> _blackHoleDisallowedBlocks;
     public final ModConfigSpec.ConfigValue<Double> _blackHoleDeltaMultiplier;
     public final ModConfigSpec.ConfigValue<Boolean> _blackHoleCanMove;
+    public final ModConfigSpec.ConfigValue<List<? extends String>> _blackHoleRecipes;
+
     public ConfigServer(ModConfigSpec.Builder builder)
     {
         builder.push("Scroll");
@@ -117,6 +118,8 @@ public class ConfigServer
         _blackHoleDeltaMultiplier = builder.define("Black Hole delta multiplier", 0.92);
         builder.comment("If set to false, the black hole can be moved by telekinesis, water, etc.");
         _blackHoleCanMove = builder.define("Black Hole can move", true);
+        builder.comment("Put the path to the recipe file in the list, works with folders too.");
+        _blackHoleRecipes = builder.defineListAllowEmpty("Black hole recipes", List.of(), () -> "", object -> object instanceof String);
         builder.pop();
     }
 }

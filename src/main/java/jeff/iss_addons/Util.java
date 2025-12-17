@@ -1,12 +1,6 @@
 package jeff.iss_addons;
 
-import io.redspace.ironsspellbooks.entity.spells.AbstractMagicProjectile;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.item.FallingBlockEntity;
-import net.minecraft.world.entity.projectile.AbstractHurtingProjectile;
-import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.phys.Vec3;
 
 public final class Util
